@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">app-reservas-hotel</string>
     <string name="error_db_access">Error al acceder a la base de datos:\n%1$s</string>
+    <string name="LblUsuario">Usuario</string>
+    <string name="TboxUserHint">example@example.com</string>
+    <string name="LblUsuarioPassword">Contraseña</string>
+    <string name="TboxUsuarioPasswordHint">example_1234</string>
 </resources>
