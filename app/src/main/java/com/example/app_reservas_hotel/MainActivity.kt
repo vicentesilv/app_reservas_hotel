@@ -1,16 +1,13 @@
 package com.example.app_reservas_hotel
 
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
+import android.graphics.BitmapFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +41,83 @@ class MainActivity : AppCompatActivity() {
             try {
                 val dbHelper = DatabaseHelper(this@MainActivity)
                 val db = dbHelper.readableDatabase
+
+                // --- Mostrar usuarios desde la tabla `usuarios` ---
+                try {
+                    val usersCursor = db.rawQuery("SELECT id, username, name, age, number FROM usuarios", null)
+                    usersCursor.use { uc ->
+                        if (uc.moveToFirst()) {
+                            runOnUiThread {
+                                val header = TextView(this@MainActivity)
+                                header.text = "Usuarios"
+                                header.textSize = 18f
+                                container.addView(header)
+                            }
+
+                            val idIdx = uc.getColumnIndex("id")
+                            val usernameIdx = uc.getColumnIndex("username")
+                            val nameIdx = uc.getColumnIndex("name")
+                            val ageIdx = uc.getColumnIndex("age")
+                            val numberIdx = uc.getColumnIndex("number")
+
+                            do {
+                                val uid = if (idIdx >= 0) try { uc.getLong(idIdx) } catch (_: Exception) { -1L } else -1L
+                                val uname = if (usernameIdx >= 0) try { uc.getString(usernameIdx) ?: "" } catch (_: Exception) { "" } else ""
+                                val realName = if (nameIdx >= 0) try { uc.getString(nameIdx) ?: "" } catch (_: Exception) { "" } else ""
+                                val age = if (ageIdx >= 0) try { uc.getInt(ageIdx) } catch (_: Exception) { -1 } else -1
+                                val number = if (numberIdx >= 0) try { uc.getString(numberIdx) ?: "" } catch (_: Exception) { "" } else ""
+
+                                // Contar reservas del usuario (no muestra datos sensibles)
+                                var reservasCount = 0
+                                try {
+                                    val rcCursor = db.rawQuery("SELECT COUNT(*) FROM reservas WHERE id_usuario = ?", arrayOf(uid.toString()))
+                                    rcCursor.use { rcc ->
+                                        if (rcc.moveToFirst()) reservasCount = rcc.getInt(0)
+                                    }
+                                } catch (_: Exception) {
+                                    // ignora si la tabla reservas no existe o falla la consulta
+                                }
+
+                                runOnUiThread {
+                                    // Mostrar en dos líneas: primera línea identificación, segunda con datos adicionales
+                                    val tv = TextView(this@MainActivity)
+                                    val line1 = StringBuilder()
+                                    if (uid >= 0) line1.append("#$uid ")
+                                    if (uname.isNotEmpty()) line1.append(uname)
+
+                                    val line2 = StringBuilder()
+                                    if (realName.isNotEmpty()) line2.append("Nombre: " + realName)
+                                    if (age >= 0) {
+                                        if (line2.isNotEmpty()) line2.append(" | ")
+                                        line2.append("Edad: " + age)
+                                    }
+                                    if (number.isNotEmpty()) {
+                                        if (line2.isNotEmpty()) line2.append(" | ")
+                                        line2.append("Tel: " + number)
+                                    }
+                                    // Añadir número de reservas si hay al menos una
+                                    if (reservasCount > 0) {
+                                        if (line2.isNotEmpty()) line2.append(" | ")
+                                        line2.append("Reservas: " + reservasCount)
+                                    }
+
+                                    tv.text = if (line2.isNotEmpty()) line1.toString() + "\n" + line2.toString() else line1.toString()
+                                    container.addView(tv)
+                                }
+                            } while (uc.moveToNext())
+                        } else {
+                            runOnUiThread {
+                                val tv = TextView(this@MainActivity)
+                                tv.text = "No hay usuarios en la base de datos."
+                                container.addView(tv)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error al leer usuarios", e)
+                }
+
+                // --- Mostrar hoteles desde la tabla `hoteles` ---
                 val cursor = dbHelper.mostrarHoteles(db)
 
                 cursor.use { c ->
@@ -99,16 +173,17 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
 
-                            // Mostrar la imagen en el hilo UI usando Glide y URI assets
+                            // Mostrar la imagen en el hilo UI leyendo desde assets (evita dependencia externa)
                             runOnUiThread {
                                 if (selectedPath != null) {
-                                    val uri = "file:///android_asset/$selectedPath"
-                                    Glide.with(this@MainActivity)
-                                        .load(uri)
-                                        .centerCrop()
-                                        .placeholder(android.R.drawable.progress_indeterminate_horizontal)
-                                        .error(android.R.drawable.ic_menu_report_image)
-                                        .into(img)
+                                    try {
+                                        assets.open(selectedPath).use { ins ->
+                                            val bmp = BitmapFactory.decodeStream(ins)
+                                            if (bmp != null) img.setImageBitmap(bmp) else img.setImageResource(android.R.drawable.ic_menu_report_image)
+                                        }
+                                    } catch (e: Exception) {
+                                        img.setImageResource(android.R.drawable.ic_menu_report_image)
+                                    }
                                 } else {
                                     img.setImageResource(android.R.drawable.ic_menu_report_image)
                                 }

@@ -1,8 +1,17 @@
 {
   "usuarios": [
-    { "username": "user1", "password": "pass1" },
-    { "username": "user2", "password": "pass2" },
-    { "username": "user3", "password": "pass3" }
+    { "username": "user1", "password": "pass1",
+      "name": "John Doe", "age": 30,
+      "number": "123-456-7890"
+    },
+    { "username": "user2", "password": "pass2",
+      "name": "Jane Smith", "age": 25,
+      "number": "098-765-4321"
+    },
+    { "username": "user3", "password": "pass3",
+      "name": "Alice Johnson", "age": 28,
+      "number": "555-123-4567"
+    }
   ],
   "hoteles": [
     {

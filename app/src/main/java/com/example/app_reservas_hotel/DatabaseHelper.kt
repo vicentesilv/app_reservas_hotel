@@ -22,7 +22,10 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 CREATE TABLE IF NOT EXISTS usuarios (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL UNIQUE,
-                    password TEXT NOT NULL
+                    password TEXT NOT NULL,
+                    name TEXT,
+                    age INTEGER,
+                    number TEXT
                 );
                 """.trimIndent()
         )
@@ -87,7 +90,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     private fun insertFromAssets(db: SQLiteDatabase): Boolean {
         val jsonString: String = try {
             context.assets.open("data.json").bufferedReader().use { it.readText() }
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             return false
         }
 
@@ -105,7 +108,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     val nombre = hObj.optString("nombre", "Hotel desconocido")
                     val direccion = hObj.optString("direccion", "Dirección desconocida")
                     val telefono = hObj.optString("telefono", "000-000-000")
-                    val fotoHotel = hObj.optString("foto", null)
+                    val fotoHotel = hObj.optString("foto", "")
 
                     val hv = ContentValues().apply {
                         put("nombre", nombre)
@@ -126,7 +129,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         val numero = rObj.optInt("numero_habitacion", j + 1)
                         val tipo = rObj.optString("tipo", "Estándar")
                         val precio = rObj.optDouble("precio", 50.0)
-                        val fotoHabitacion = rObj.optString("foto", null)
+                        val fotoHabitacion = rObj.optString("foto", "")
 
                         val rv = ContentValues().apply {
                             put("id_hotel", hotelId)
@@ -144,11 +147,18 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 // Insertar usuarios
                 for (i in 0 until usuariosArray.length()) {
                     val uObj = usuariosArray.optJSONObject(i) ?: continue
-                    val username = uObj.optString("username", null) ?: continue
+                    val username = uObj.optString("username", "")
+                    if (username.isEmpty()) continue
                     val password = uObj.optString("password", "")
+                    val name = uObj.optString("name", "")
+                    val age = if (uObj.has("age")) uObj.optInt("age", -1) else -1
+                    val number = uObj.optString("number", "")
                     val uv = ContentValues().apply {
                         put("username", username)
                         put("password", password)
+                        if (!name.isNullOrEmpty()) put("name", name)
+                        if (age >= 0) put("age", age)
+                        if (!number.isNullOrEmpty()) put("number", number)
                     }
                     db.insertWithOnConflict("usuarios", null, uv, SQLiteDatabase.CONFLICT_IGNORE)
                     insertedAny = true
@@ -160,7 +170,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             }
 
             return insertedAny
-        } catch (e: JSONException) {
+        } catch (_: JSONException) {
             return false
         }
     }
@@ -174,14 +184,23 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
 
     fun mostrarDatosPrueba(db: SQLiteDatabase): String {
         val sb = StringBuilder()
-        val usuariosCursor = db.rawQuery("SELECT username,password FROM usuarios", null)
+        val usuariosCursor = db.rawQuery("SELECT id, username, name, age, number FROM usuarios", null)
         usuariosCursor.use {
             if (it.moveToFirst()) {
                 sb.append("Usuarios registrados:\n")
                 do {
-                    val username = it.getString(0)
-                    val password = it.getString(1)
-                    sb.append(" - $username $password\n")
+                    val uid = it.getLong(0)
+                    val username = it.getString(1)
+                    val name = it.getString(2)
+                    val age = try { it.getInt(3) } catch (_: Exception) { -1 }
+                    val number = it.getString(4)
+                    val parts = mutableListOf<String>()
+                    if (!name.isNullOrEmpty()) parts.add("Nombre: $name")
+                    if (age >= 0) parts.add("Edad: $age")
+                    if (!number.isNullOrEmpty()) parts.add("Tel: $number")
+                    sb.append(" - #$uid $username")
+                    if (parts.isNotEmpty()) sb.append(" (" + parts.joinToString(" | ") + ")")
+                    sb.append("\n")
                 } while (it.moveToNext())
             } else {
                 sb.append("No hay usuarios registrados.\n")
@@ -239,10 +258,19 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     }
 
     fun registrarUsuario(username: String, password: String): Boolean {
+        // Mantener firma antigua para compatibilidad; sobrecarga con más campos disponible
+        return registrarUsuario(username, password, null, null, null)
+    }
+
+    // Sobrecarga que permite añadir name/age/number
+    fun registrarUsuario(username: String, password: String, name: String? = null, age: Int? = null, number: String? = null): Boolean {
         val db = this.writableDatabase
         val values = ContentValues().apply {
             put("username", username)
             put("password", password)
+            if (!name.isNullOrEmpty()) put("name", name)
+            if (age != null && age >= 0) put("age", age)
+            if (!number.isNullOrEmpty()) put("number", number)
         }
         val result = db.insertWithOnConflict("usuarios", null, values, SQLiteDatabase.CONFLICT_IGNORE)
         return result != -1L
