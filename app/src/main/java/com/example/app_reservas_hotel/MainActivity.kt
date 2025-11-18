@@ -1,5 +1,6 @@
 package com.example.app_reservas_hotel
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +9,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.BitmapFactory
+import android.os.Handler
+import android.os.Looper
 import android.widget.EditText
 
 fun tranformTboxToString(Object: EditText): String{
@@ -218,10 +221,10 @@ class MainActivity : AppCompatActivity() {
             }
         }.start()
 
-//        // Mantener la redirección al login tras 5s
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            startActivity(Intent(this@MainActivity, Login::class.java))
-//            finish()
-//        }, 5000L)
+        // Mantener la redirección al login tras 5s
+        Handler(Looper.getMainLooper()).postDelayed({
+            startActivity(Intent(this@MainActivity, Registro::class.java))
+            finish()
+        }, 5000L)
     }
 }

@@ -17,6 +17,7 @@ class Registro : AppCompatActivity() {
         val TboxAge = findViewById<EditText>(R.id.Tboxage)
         val TboxPhone = findViewById<EditText>(R.id.Tboxphono)
         val BtonRegister = findViewById<Button>(R.id.BtnLogin)
+        val BtonBackLogin = findViewById<Button>(R.id.btn_redirect_register)
         BtonRegister.setOnClickListener {
             val username=tranformTboxToString(TboxUsername)
             val password=tranformTboxToString(TboxPassword)
@@ -31,6 +32,11 @@ class Registro : AppCompatActivity() {
             else{
                 Toast.makeText(this, "Por favor, complete todos los campos", Toast.LENGTH_SHORT).show()
             }
+        }
+        BtonBackLogin.setOnClickListener {
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
+            finish()
         }
     }
     private fun attemptRegister(username:String,password:String,mail:String,age:Int,phone:String){

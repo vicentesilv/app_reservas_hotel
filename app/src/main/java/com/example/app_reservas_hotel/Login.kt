@@ -17,6 +17,7 @@ class Login : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         val BtnLogin = findViewById<Button>(R.id.BtnLogin)
+        val BtnRegistro = findViewById<Button>(R.id.btn_redirect_register)
         val TboxUser = findViewById<EditText>(R.id.TboxUser)
         val TboxPassword = findViewById<EditText>(R.id.TboxUsuarioPassword)
 
@@ -29,6 +30,10 @@ class Login : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Ingrese usuario y contraseña", Toast.LENGTH_SHORT).show()
             }
+        }
+        BtnRegistro.setOnClickListener {
+            val intent = Intent(this, Registro::class.java)
+            startActivity(intent)
         }
     }
 
