@@ -47,6 +47,5 @@ class Login : AppCompatActivity() {
         } finally {
             dbHelper.close()
         }
-        //
     }
 }

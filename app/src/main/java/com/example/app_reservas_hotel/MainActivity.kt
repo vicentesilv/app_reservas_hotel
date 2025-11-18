@@ -8,7 +8,12 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.BitmapFactory
+import android.widget.EditText
 
+fun tranformTboxToString(Object: EditText): String{
+    val text = Object.text.toString().trim()
+    return text
+}
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
