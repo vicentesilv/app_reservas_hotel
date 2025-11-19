@@ -94,6 +94,17 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             return false
         }
 
+        // Helper para normalizar rutas de assets/imagenes
+        fun normalizeAssetPath(p: String?): String? {
+            if (p.isNullOrEmpty()) return null
+            var s = p.replace("\\", "/").trim()
+            s = s.removePrefix("file:///android_asset/")
+            while (s.startsWith("/")) s = s.removePrefix("/")
+            while (s.contains("images/images/")) s = s.replace("images/images/", "images/")
+            s = s.replace("./", "")
+            return s
+        }
+
         try {
             val root = JSONObject(jsonString)
             val hotelesArray = root.optJSONArray("hoteles") ?: JSONArray()
@@ -108,7 +119,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     val nombre = hObj.optString("nombre", "Hotel desconocido")
                     val direccion = hObj.optString("direccion", "Dirección desconocida")
                     val telefono = hObj.optString("telefono", "000-000-000")
-                    val fotoHotel = hObj.optString("foto", "")
+                    val fotoHotelRaw = hObj.optString("foto", "")
+                    val fotoHotel = normalizeAssetPath(fotoHotelRaw)
 
                     val hv = ContentValues().apply {
                         put("nombre", nombre)
@@ -129,7 +141,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         val numero = rObj.optInt("numero_habitacion", j + 1)
                         val tipo = rObj.optString("tipo", "Estándar")
                         val precio = rObj.optDouble("precio", 50.0)
-                        val fotoHabitacion = rObj.optString("foto", "")
+                        val fotoHabitacionRaw = rObj.optString("foto", "")
+                        val fotoHabitacion = normalizeAssetPath(fotoHabitacionRaw)
 
                         val rv = ContentValues().apply {
                             put("id_hotel", hotelId)
@@ -341,5 +354,62 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             "SELECT id, id_hotel, numero_habitacion, tipo, precio, foto FROM habitaciones WHERE id = ?",
             arrayOf(habitacionId.toString())
         )
+    }
+
+    fun normalizeFotoPathsInDb() {
+        val db = this.writableDatabase
+        try {
+            db.beginTransaction()
+            try {
+                // Helper local (mismo que insertFromAssets)
+                fun normalizeAssetPath(p: String?): String? {
+                    if (p.isNullOrEmpty()) return null
+                    var s = p.replace("\\", "/").trim()
+                    s = s.removePrefix("file:///android_asset/")
+                    while (s.startsWith("/")) s = s.removePrefix("/")
+                    while (s.contains("images/images/")) s = s.replace("images/images/", "images/")
+                    s = s.replace("./", "")
+                    return s
+                }
+
+                // Actualizar HOTELES
+                val c = db.rawQuery("SELECT id, foto FROM HOTELES", null)
+                c.use {
+                    if (it.moveToFirst()) {
+                        do {
+                            val id = it.getLong(0)
+                            val foto = try { it.getString(1) } catch (_: Exception) { null }
+                            val normalized = normalizeAssetPath(foto)
+                            if (normalized != null && normalized != foto) {
+                                val cv = ContentValues().apply { put("foto", normalized) }
+                                db.update("HOTELES", cv, "id = ?", arrayOf(id.toString()))
+                            }
+                        } while (it.moveToNext())
+                    }
+                }
+
+                // Actualizar habitaciones
+                val rc = db.rawQuery("SELECT id, foto FROM habitaciones", null)
+                rc.use {
+                    if (it.moveToFirst()) {
+                        do {
+                            val id = it.getLong(0)
+                            val foto = try { it.getString(1) } catch (_: Exception) { null }
+                            val normalized = normalizeAssetPath(foto)
+                            if (normalized != null && normalized != foto) {
+                                val cv = ContentValues().apply { put("foto", normalized) }
+                                db.update("habitaciones", cv, "id = ?", arrayOf(id.toString()))
+                            }
+                        } while (it.moveToNext())
+                    }
+                }
+
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+        } finally {
+            try { db.close() } catch (_: Exception) {}
+        }
     }
 }

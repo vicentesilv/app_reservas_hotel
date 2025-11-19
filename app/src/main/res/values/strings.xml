@@ -1,4 +1,32 @@
 <resources>
     <string name="app_name">app-reservas-hotel</string>
     <string name="error_db_access">Error al acceder a la base de datos:\n%1$s</string>
+
+    <!-- Strings para el navigation drawer -->
+    <string name="navigation_drawer_open">Abrir menú</string>
+    <string name="navigation_drawer_close">Cerrar menú</string>
+
+    <!-- Opciones del menú -->
+    <string name="menu_hoteles">Hoteles</string>
+    <string name="menu_reservas">Reservas</string>
+    <string name="menu_mi_info">Mi información</string>
+    <string name="menu_cerrar_sesion">Cerrar sesión</string>
+
+    <!-- Header / welcome -->
+    <string name="header_default_user">Usuario</string>
+    <string name="header_avatar_desc">Avatar</string>
+    <string name="welcome">Bienvenido</string>
+    <string name="welcome_user">Bienvenido, %1$s</string>
+
+    <!-- Search -->
+    <string name="search_hint">Buscar hoteles...</string>
+
+    <!-- MainActivity strings -->
+    <string name="users_header">Usuarios</string>
+    <string name="no_users">No hay usuarios en la base de datos.</string>
+    <string name="no_hotels">No hay hoteles en la base de datos.</string>
+    <string name="direccion_label">Dirección: %1$s</string>
+    <string name="tel_label">Tel: %1$s</string>
+    <string name="room_row">#%1$d - %2$s - $%3$.2f</string>
+    <string name="no_rooms">(Sin habitaciones)</string>
 </resources>

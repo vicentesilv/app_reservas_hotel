@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_hoteles"
+            android:icon="@drawable/ic_hotels"
+            android:title="@string/menu_hoteles" />
+        <item
+            android:id="@+id/nav_reservas"
+            android:icon="@drawable/ic_reservas"
+            android:title="@string/menu_reservas" />
+        <item
+            android:id="@+id/nav_mi_info"
+            android:icon="@drawable/ic_info"
+            android:title="@string/menu_mi_info" />
+    </group>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="@string/menu_cerrar_sesion" />
+
+</menu>
