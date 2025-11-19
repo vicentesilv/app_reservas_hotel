@@ -23,6 +23,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private lateinit var adapter: HotelAdapter
+    private var currentUsername: String? = null
 
     // Handler y runnable para ocultar el mensaje de bienvenida y permitir su cancelación
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -42,7 +43,12 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         // Inicializar header del drawer con el username (si viene)
         val header: View? = navigationView.getHeaderView(0)
         val headerUsername = header?.findViewById<TextView>(R.id.headerUsername)
-        val username = intent.getStringExtra("username")
+        // Preferir username pasado por Intent, si no existe usar SharedPreferences (sesión)
+        val intentUsername = intent.getStringExtra("username")
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val storedUsername = prefs.getString("logged_username", null)
+        val username = if (!intentUsername.isNullOrEmpty()) intentUsername else storedUsername
+        currentUsername = username
         headerUsername?.text = if (!username.isNullOrEmpty()) username else getString(R.string.header_default_user)
 
         // ActionBarDrawerToggle usando strings para accesibilidad
@@ -215,12 +221,17 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 try {
                     val cls = Class.forName("com.example.app_reservas_hotel.MiInformacionActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    // pasar username actual si existe
+                    currentUsername?.let { intent.putExtra("username", it) }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                 }
                 return true
             }
             R.id.nav_logout -> {
+                // limpiar sesión
+                val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                prefs.edit().remove("logged_username").apply()
                 val intent = Intent(this, Login::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
@@ -250,12 +261,16 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 try {
                     val cls = Class.forName("com.example.app_reservas_hotel.MiInformacionActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    currentUsername?.let { intent.putExtra("username", it) }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                 }
                 drawerLayout.closeDrawers()
             }
             R.id.nav_logout -> {
+                // limpiar sesión
+                val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                prefs.edit().remove("logged_username").apply()
                 val intent = Intent(this, Login::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)

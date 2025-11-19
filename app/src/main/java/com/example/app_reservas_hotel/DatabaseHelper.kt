@@ -300,6 +300,15 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
+    // Obtener usuario por username (id, username, name, age, number)
+    fun obtenerUsuarioPorUsername(username: String): Cursor {
+        val db = this.readableDatabase
+        return db.rawQuery(
+            "SELECT id, username, name, age, number FROM usuarios WHERE username = ?",
+            arrayOf(username)
+        )
+    }
+
     fun mostrarHoteles(db: SQLiteDatabase): Cursor {
         return db.rawQuery("SELECT id, nombre, direccion, telefono, foto FROM HOTELES", null)
     }
@@ -339,7 +348,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         return result > 0
     }
 
-    // Nuevos métodos para obtener información específica con fotos
+    // Métodos para obtener información específica con fotos
     fun obtenerHotelConFoto(hotelId: Long): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
@@ -411,5 +420,39 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         } finally {
             try { db.close() } catch (_: Exception) {}
         }
+    }
+
+    // Nuevo: actualizar campos de usuario por username
+    fun actualizarUsuarioPorUsername(username: String, name: String? = null, age: Int? = null, number: String? = null): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            if (name != null) put("name", name) else putNull("name")
+            if (age != null && age >= 0) put("age", age) else putNull("age")
+            if (number != null) put("number", number) else putNull("number")
+        }
+        val rows = try {
+            db.update("usuarios", values, "username = ?", arrayOf(username))
+        } catch (_: Exception) {
+            0
+        }
+        return rows > 0
+    }
+
+    // Nuevo: actualizar credenciales (password) y/o número por username
+    fun actualizarCredencialesPorUsername(username: String, password: String? = null, number: String? = null): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        if (password != null) values.put("password", password)
+        if (number != null) values.put("number", number)
+
+        // Si no se pasó nada para actualizar, devolver false
+        if (values.size() == 0) return false
+
+        val rows = try {
+            db.update("usuarios", values, "username = ?", arrayOf(username))
+        } catch (_: Exception) {
+            0
+        }
+        return rows > 0
     }
 }

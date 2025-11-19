@@ -29,4 +29,14 @@
     <string name="tel_label">Tel: %1$s</string>
     <string name="room_row">#%1$d - %2$s - $%3$.2f</string>
     <string name="no_rooms">(Sin habitaciones)</string>
+
+    <!-- Strings para Mi Información -->
+    <string name="mi_info_title">Mi información</string>
+    <string name="label_usuario">Usuario:</string>
+    <string name="label_nombre">Nombre:</string>
+    <string name="label_edad">Edad:</string>
+    <string name="label_telefono">Teléfono:</string>
+    <string name="dash">-</string>
+    <string name="editar_info">Editar información</string>
+    <string name="account_label">Cuenta de usuario</string>
 </resources>

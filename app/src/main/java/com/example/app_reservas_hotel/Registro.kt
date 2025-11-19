@@ -42,8 +42,13 @@ class Registro : AppCompatActivity() {
     private fun attemptRegister(username:String,password:String,mail:String,age:Int,phone:String){
         val dbHelper = DatabaseHelper(this)
         try {
-            val success = dbHelper.registrarUsuario(mail,password,username,age,phone)
+            // registrarUsuario(username, password, name?, age?, number?)
+            val success = dbHelper.registrarUsuario(username, password, mail, age, phone)
             if (success) {
+                // guardar sesión
+                val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                prefs.edit().putString("logged_username", username).apply()
+
                 val intent = Intent(this, HotelesActivity::class.java)
                 intent.putExtra("username", username)
                 startActivity(intent)

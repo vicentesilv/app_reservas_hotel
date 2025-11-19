@@ -19,8 +19,8 @@
             android:background="@color/white"
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:titleTextColor="@color/black"
-            app:title="@string/menu_hoteles">
+            app:title="@string/menu_hoteles"
+            app:titleTextColor="@color/black">
 
             <!-- SearchView a la derecha dentro del Toolbar -->
             <androidx.appcompat.widget.SearchView
@@ -29,10 +29,10 @@
                 android:layout_height="36dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="12dp"
-                android:queryHint="@string/search_hint"
                 android:background="@drawable/search_bg"
-                app:iconifiedByDefault="false"
-                android:iconifiedByDefault="false" />
+                android:iconifiedByDefault="false"
+                android:queryHint="@string/search_hint"
+                app:iconifiedByDefault="false" />
 
         </androidx.appcompat.widget.Toolbar>
 
@@ -63,7 +63,7 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header_hotels"
         app:menu="@menu/drawer_menu"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black" />
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

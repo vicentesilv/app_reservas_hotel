@@ -13,6 +13,7 @@
         android:theme="@style/Theme.Appreservashotel">
         <activity android:name=".Registro" />
         <activity android:name=".HotelesActivity" />
+        <activity android:name=".MiInformacionActivity" />
         <activity android:name=".Login" />
         <activity
             android:name=".MainActivity"
