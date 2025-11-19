@@ -38,10 +38,9 @@ class Registro : AppCompatActivity() {
         try {
             val success = dbHelper.registrarUsuario(mail,password,username,age,phone)
             if (success) {
-                val intent = Intent(this, HotelesActivity::class.java)
-                intent.putExtra("username", username)
+                Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, Login::class.java)
                 startActivity(intent)
-                finish()
             } else {
                 Toast.makeText(this, "Registro fallido", Toast.LENGTH_SHORT).show()
             }
