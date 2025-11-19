@@ -292,7 +292,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     fun iniciarSesion(username: String, password: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT id FROM usuarios WHERE username = ? AND password = ?",
+            "SELECT id FROM usuarios WHERE name = ? AND password = ?",
             arrayOf(username, password)
         )
         cursor.use {
