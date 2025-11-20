@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     // Glide para carga eficiente de imágenes desde assets o URL
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation(libs.androidx.recyclerview)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
