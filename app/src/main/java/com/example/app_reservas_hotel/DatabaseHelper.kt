@@ -48,7 +48,9 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     numero_habitacion INTEGER NOT NULL,
                     tipo TEXT NOT NULL,
                     precio REAL NOT NULL,
-                    foto TEXT
+                    foto TEXT,
+                    capacidad INTEGER NOT NULL,
+                    descripcion TEXT
                 );
                 """.trimIndent()
         )
