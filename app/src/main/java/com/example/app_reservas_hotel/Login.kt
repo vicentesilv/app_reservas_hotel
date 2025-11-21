@@ -3,20 +3,19 @@ package com.example.app_reservas_hotel
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class Login : AppCompatActivity() {
-    private val TAG = "login"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         val BtnLogin = findViewById<Button>(R.id.BtnLogin)
+        val BtnRegistro = findViewById<Button>(R.id.btn_redirect_register)
         val TboxUser = findViewById<EditText>(R.id.TboxUser)
         val TboxPassword = findViewById<EditText>(R.id.TboxUsuarioPassword)
 
@@ -30,6 +29,10 @@ class Login : AppCompatActivity() {
                 Toast.makeText(this, "Ingrese usuario y contraseña", Toast.LENGTH_SHORT).show()
             }
         }
+        BtnRegistro.setOnClickListener {
+            val intent = Intent(this, Registro::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun attemptLogin(username: String, password: String) {
@@ -37,6 +40,9 @@ class Login : AppCompatActivity() {
         try {
             val success = dbHelper.iniciarSesion(username, password)
             if (success) {
+                // guardar sesión para que otras Activities puedan leer el usuario
+                val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                prefs.edit().putString("logged_username", username).apply()
                 val intent = Intent(this, HotelesActivity::class.java)
                 intent.putExtra("username", username)
                 startActivity(intent)

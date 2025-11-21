@@ -96,6 +96,17 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             return false
         }
 
+        // Helper para normalizar rutas de assets/imagenes
+        fun normalizeAssetPath(p: String?): String? {
+            if (p.isNullOrEmpty()) return null
+            var s = p.replace("\\", "/").trim()
+            s = s.removePrefix("file:///android_asset/")
+            while (s.startsWith("/")) s = s.removePrefix("/")
+            while (s.contains("images/images/")) s = s.replace("images/images/", "images/")
+            s = s.replace("./", "")
+            return s
+        }
+
         try {
             val root = JSONObject(jsonString)
             val hotelesArray = root.optJSONArray("hoteles") ?: JSONArray()
@@ -110,7 +121,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     val nombre = hObj.optString("nombre", "Hotel desconocido")
                     val direccion = hObj.optString("direccion", "Dirección desconocida")
                     val telefono = hObj.optString("telefono", "000-000-000")
-                    val fotoHotel = hObj.optString("foto", "")
+                    val fotoHotelRaw = hObj.optString("foto", "")
+                    val fotoHotel = normalizeAssetPath(fotoHotelRaw)
 
                     val hv = ContentValues().apply {
                         put("nombre", nombre)
@@ -131,7 +143,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         val numero = rObj.optInt("numero_habitacion", j + 1)
                         val tipo = rObj.optString("tipo", "Estándar")
                         val precio = rObj.optDouble("precio", 50.0)
-                        val fotoHabitacion = rObj.optString("foto", "")
+                        val fotoHabitacionRaw = rObj.optString("foto", "")
+                        val fotoHabitacion = normalizeAssetPath(fotoHabitacionRaw)
 
                         val rv = ContentValues().apply {
                             put("id_hotel", hotelId)
@@ -281,12 +294,21 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     fun iniciarSesion(username: String, password: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT id FROM usuarios WHERE username = ? AND password = ?",
+            "SELECT id FROM usuarios WHERE name = ? AND password = ?",
             arrayOf(username, password)
         )
         cursor.use {
             return it.count > 0
         }
+    }
+
+    // Obtener usuario por username (id, username, name, age, number)
+    fun obtenerUsuarioPorUsername(username: String): Cursor {
+        val db = this.readableDatabase
+        return db.rawQuery(
+            "SELECT id, username, name, age, number FROM usuarios WHERE username = ?",
+            arrayOf(username)
+        )
     }
 
     fun mostrarHoteles(db: SQLiteDatabase): Cursor {
@@ -328,7 +350,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         return result > 0
     }
 
-    // Nuevos métodos para obtener información específica con fotos
+    // Métodos para obtener información específica con fotos
     fun obtenerHotelConFoto(hotelId: Long): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
@@ -343,5 +365,96 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             "SELECT id, id_hotel, numero_habitacion, tipo, precio, foto FROM habitaciones WHERE id = ?",
             arrayOf(habitacionId.toString())
         )
+    }
+
+    fun normalizeFotoPathsInDb() {
+        val db = this.writableDatabase
+        try {
+            db.beginTransaction()
+            try {
+                // Helper local (mismo que insertFromAssets)
+                fun normalizeAssetPath(p: String?): String? {
+                    if (p.isNullOrEmpty()) return null
+                    var s = p.replace("\\", "/").trim()
+                    s = s.removePrefix("file:///android_asset/")
+                    while (s.startsWith("/")) s = s.removePrefix("/")
+                    while (s.contains("images/images/")) s = s.replace("images/images/", "images/")
+                    s = s.replace("./", "")
+                    return s
+                }
+
+                // Actualizar HOTELES
+                val c = db.rawQuery("SELECT id, foto FROM HOTELES", null)
+                c.use {
+                    if (it.moveToFirst()) {
+                        do {
+                            val id = it.getLong(0)
+                            val foto = try { it.getString(1) } catch (_: Exception) { null }
+                            val normalized = normalizeAssetPath(foto)
+                            if (normalized != null && normalized != foto) {
+                                val cv = ContentValues().apply { put("foto", normalized) }
+                                db.update("HOTELES", cv, "id = ?", arrayOf(id.toString()))
+                            }
+                        } while (it.moveToNext())
+                    }
+                }
+
+                // Actualizar habitaciones
+                val rc = db.rawQuery("SELECT id, foto FROM habitaciones", null)
+                rc.use {
+                    if (it.moveToFirst()) {
+                        do {
+                            val id = it.getLong(0)
+                            val foto = try { it.getString(1) } catch (_: Exception) { null }
+                            val normalized = normalizeAssetPath(foto)
+                            if (normalized != null && normalized != foto) {
+                                val cv = ContentValues().apply { put("foto", normalized) }
+                                db.update("habitaciones", cv, "id = ?", arrayOf(id.toString()))
+                            }
+                        } while (it.moveToNext())
+                    }
+                }
+
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+        } finally {
+            try { db.close() } catch (_: Exception) {}
+        }
+    }
+
+    // Nuevo: actualizar campos de usuario por username
+    fun actualizarUsuarioPorUsername(username: String, name: String? = null, age: Int? = null, number: String? = null): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            if (name != null) put("name", name) else putNull("name")
+            if (age != null && age >= 0) put("age", age) else putNull("age")
+            if (number != null) put("number", number) else putNull("number")
+        }
+        val rows = try {
+            db.update("usuarios", values, "username = ?", arrayOf(username))
+        } catch (_: Exception) {
+            0
+        }
+        return rows > 0
+    }
+
+    // Nuevo: actualizar credenciales (password) y/o número por username
+    fun actualizarCredencialesPorUsername(username: String, password: String? = null, number: String? = null): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        if (password != null) values.put("password", password)
+        if (number != null) values.put("number", number)
+
+        // Si no se pasó nada para actualizar, devolver false
+        if (values.size() == 0) return false
+
+        val rows = try {
+            db.update("usuarios", values, "username = ?", arrayOf(username))
+        } catch (_: Exception) {
+            0
+        }
+        return rows > 0
     }
 }

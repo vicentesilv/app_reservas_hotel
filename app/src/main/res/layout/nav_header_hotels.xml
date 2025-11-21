@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="160dp"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:padding="16dp"
+    android:background="@drawable/bg_gradient">
+
+    <ImageView
+        android:id="@+id/headerAvatar"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="@string/header_avatar_desc" />
+
+    <TextView
+        android:id="@+id/headerUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/header_default_user"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:paddingTop="8dp" />
+
+</LinearLayout>

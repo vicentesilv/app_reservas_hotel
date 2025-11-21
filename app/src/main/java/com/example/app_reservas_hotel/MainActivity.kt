@@ -1,5 +1,6 @@
 package com.example.app_reservas_hotel
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +9,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.BitmapFactory
+import android.os.Handler
+import android.os.Looper
 import android.widget.EditText
 
 fun tranformTboxToString(Object: EditText): String{
@@ -141,7 +144,7 @@ class MainActivity : AppCompatActivity() {
                             val nameTv = view.findViewById<TextView>(R.id.hotelName)
                             val addrTv = view.findViewById<TextView>(R.id.hotelAddr)
                             val phoneTv = view.findViewById<TextView>(R.id.hotelPhone)
-                            val roomsContainer = view.findViewById<LinearLayout>(R.id.roomsContainer)
+                            val roomsContainer = view.findViewById<LinearLayout?>(R.id.roomsContainer)
 
                             nameTv.text = hname
                             addrTv.text = "Dirección: $haddr"
@@ -169,12 +172,12 @@ class MainActivity : AppCompatActivity() {
                                         val roomTv = TextView(this@MainActivity)
                                         roomTv.text = "    #$num - $tipo - \$${"%.2f".format(precio)}"
                                         roomTv.textSize = 14f
-                                        roomsContainer.addView(roomTv)
+                                        roomsContainer?.addView(roomTv)
                                     } while (rc.moveToNext())
                                 } else {
                                     val emptyTv = TextView(this@MainActivity)
                                     emptyTv.text = "    (Sin habitaciones)"
-                                    roomsContainer.addView(emptyTv)
+                                    roomsContainer?.addView(emptyTv)
                                 }
                             }
 
@@ -218,10 +221,10 @@ class MainActivity : AppCompatActivity() {
             }
         }.start()
 
-//        // Mantener la redirección al login tras 5s
-//        Handler(Looper.getMainLooper()).postDelayed({
-//            startActivity(Intent(this@MainActivity, Login::class.java))
-//            finish()
-//        }, 5000L)
+        // Mantener la redirección al login tras 5s
+        Handler(Looper.getMainLooper()).postDelayed({
+            startActivity(Intent(this@MainActivity, Login::class.java))
+            finish()
+        }, 500L)
     }
 }
