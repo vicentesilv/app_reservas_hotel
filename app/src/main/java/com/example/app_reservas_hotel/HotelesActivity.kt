@@ -17,7 +17,9 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.app_reservas_hotel.HotelRooms.HotelRoom
 import com.google.android.material.navigation.NavigationView
+import kotlin.jvm.java
 
 class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawerLayout: DrawerLayout
@@ -143,7 +145,12 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         }
 
         // Inicializar adapter con la lista completa
-        adapter = HotelAdapter(hotelsList)
+        adapter = HotelAdapter(hotelsList){hotel->
+            val intent = Intent(this, HotelRoom::class.java)
+            intent.putExtra("hotel", hotel.name)
+            startActivity(intent)
+            finish()
+        }
         recycler.adapter = adapter
 
         // conectar SearchView para búsqueda en tiempo real
@@ -188,7 +195,9 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
 
         // ejemplo: click en item (por ahora sólo un placeholder)
         // podrías exponer un callback desde el adaptador para abrir detalle
-        recycler.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {})
+        recycler.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+
+        })
 
         // marcar Hoteles como seleccionado
         navigationView.setCheckedItem(R.id.nav_hoteles)

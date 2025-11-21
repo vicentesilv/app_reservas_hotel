@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.app_reservas_hotel.HotelRooms.HotelRoom
 
 class Login : AppCompatActivity() {
 
@@ -43,8 +44,8 @@ class Login : AppCompatActivity() {
                 // guardar sesión para que otras Activities puedan leer el usuario
                 val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
                 prefs.edit().putString("logged_username", username).apply()
-                val intent = Intent(this, HotelesActivity::class.java)
-                intent.putExtra("username", username)
+                val intent = Intent(this, HotelRoom::class.java)
+                //intent.putExtra("username", username)
                 startActivity(intent)
                 finish()
             } else {

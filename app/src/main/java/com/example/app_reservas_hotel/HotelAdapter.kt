@@ -8,7 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class HotelAdapter(private val originalItems: List<Hotel>) : RecyclerView.Adapter<HotelAdapter.VH>() {
+class HotelAdapter(
+    private val originalItems: List<Hotel>,
+    private val onItemClick: (Hotel) -> Unit // Callback para el clic
+) : RecyclerView.Adapter<HotelAdapter.VH>() {
 
     // lista mutable que representa los elementos visibles (filtrados)
     private val items: MutableList<Hotel> = originalItems.toMutableList()
@@ -30,6 +33,11 @@ class HotelAdapter(private val originalItems: List<Hotel>) : RecyclerView.Adapte
         holder.name.text = h.name
         holder.addr.text = h.address
         holder.phone.text = h.phone
+
+        // Asignar el listener al item entero
+        holder.itemView.setOnClickListener {
+            onItemClick(h)
+        }
 
         val ctx = holder.itemView.context
         val placeholder = R.drawable.ic_launcher_foreground

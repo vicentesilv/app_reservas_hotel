@@ -22,7 +22,7 @@ class RoomViewHolder(view: View): RecyclerView.ViewHolder(view) {
         tvNumber.text = roomModel.num.toString()
         tvType.text= roomModel.type
         Glide.with(ivRoom.context).load(roomModel.image).centerCrop().into(ivRoom)
-        tvPrice.text= roomModel.price.toString()
+        tvPrice.text= "${roomModel.price} USD"
         tvDescription.text= roomModel.description
         tvCapacity.text= roomModel.capacity.toString()
     }
