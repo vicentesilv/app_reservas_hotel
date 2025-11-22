@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
@@ -17,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.app_reservas_hotel.HotelRooms.HotelRoom
 import com.google.android.material.navigation.NavigationView
 
 class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -37,7 +39,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         setSupportActionBar(toolbar)
 
         drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view)
+        navigationView = findViewById<NavigationView>(R.id.navigation_view)
         navigationView.setNavigationItemSelectedListener(this)
 
         // Inicializar header del drawer con el username (si viene)
@@ -102,6 +104,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                 if (it.moveToFirst()) {
                     do {
                         // columnas: id, nombre, direccion, telefono, foto
+                        val id= it.getInt(0)
                         val nombre = it.getString(1) ?: ""
                         val direccion = it.getString(2) ?: ""
                         val telefono = it.getString(3) ?: ""
@@ -125,6 +128,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
                         val foto = normalizeAssetPath(fotoRaw)
 
                         val hotel = Hotel(
+                            id=id,
                             name = nombre,
                             address = direccion,
                             phone = telefono,
@@ -142,8 +146,14 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             try { dbHelper.close() } catch (_: Exception) {}
         }
 
-        // Inicializar adapter con la lista completa
-        adapter = HotelAdapter(hotelsList)
+        // Inicializar adapter con la lista completa y el callback de clic
+        adapter = HotelAdapter(hotelsList) { hotel ->
+            Log.d("HotelesActivity", "Hotel clicked: ID=${hotel.id}, Name=${hotel.name}")
+            val intent = Intent(this, HotelRoom::class.java)
+            intent.putExtra("HOTEL_ID", hotel.id)
+            intent.putExtra("username", currentUsername)
+            startActivity(intent)
+        }
         recycler.adapter = adapter
 
         // conectar SearchView para búsqueda en tiempo real
@@ -185,10 +195,6 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         } catch (_: Exception) {
             // si no existe el SearchView, no hacer nada
         }
-
-        // ejemplo: click en item (por ahora sólo un placeholder)
-        // podrías exponer un callback desde el adaptador para abrir detalle
-        recycler.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {})
 
         // marcar Hoteles como seleccionado
         navigationView.setCheckedItem(R.id.nav_hoteles)

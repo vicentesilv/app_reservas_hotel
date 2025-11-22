@@ -13,7 +13,7 @@ import java.io.IOException
 class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, dataBaseName, null, databaseVersion) {
     companion object {
         private const val dataBaseName = "hotel_reservas.db"
-        private const val databaseVersion = 2
+        private const val databaseVersion = 6
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -27,7 +27,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     age INTEGER,
                     number TEXT
                 );
-                """.trimIndent()
+                """
+                .trimIndent()
         )
         db?.execSQL(
             """
@@ -38,7 +39,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     telefono TEXT NOT NULL,
                     foto TEXT
                 );
-                """.trimIndent()
+                """
+                .trimIndent()
         )
         db?.execSQL(
             """
@@ -47,10 +49,13 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     id_hotel INTEGER NOT NULL,
                     numero_habitacion INTEGER NOT NULL,
                     tipo TEXT NOT NULL,
-                    precio REAL NOT NULL,
-                    foto TEXT
+                    precio REAL NOT NULL, -- Changed to REAL for Double
+                    foto TEXT,
+                    capacidad INTEGER,
+                    descripcion TEXT
                 );
-                """.trimIndent()
+                """
+                .trimIndent()
         )
         db?.execSQL(
             """
@@ -64,7 +69,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     fecha_salida TEXT NOT NULL,
                     numero_habitacion INTEGER NOT NULL
                 );
-                """.trimIndent()
+                """
+                .trimIndent()
         )
 
         db?.let {
@@ -140,7 +146,9 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         val rObj = habitacionesArray.optJSONObject(j) ?: continue
                         val numero = rObj.optInt("numero_habitacion", j + 1)
                         val tipo = rObj.optString("tipo", "Estándar")
-                        val precio = rObj.optDouble("precio", 50.0)
+                        val precio = rObj.optDouble("precio", 50.0) // Read as Double
+                        val capacidad = rObj.optInt("capacidad")
+                        val descripcion = rObj.optString("descripcion")
                         val fotoHabitacionRaw = rObj.optString("foto", "")
                         val fotoHabitacion = normalizeAssetPath(fotoHabitacionRaw)
 
@@ -149,6 +157,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                             put("numero_habitacion", numero)
                             put("tipo", tipo)
                             put("precio", precio)
+                            put("capacidad", capacidad)
+                            put("descripcion", descripcion)
                             if (!fotoHabitacion.isNullOrEmpty()) {
                                 put("foto", fotoHabitacion)
                             }
@@ -315,7 +325,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
 
     fun mostrarHabitacionesPorHotel(db: SQLiteDatabase, hotelId: Long): Cursor {
         return db.rawQuery(
-            "SELECT id, numero_habitacion, tipo, precio, foto FROM habitaciones WHERE id_hotel = ?",
+            "SELECT id, numero_habitacion, tipo, precio, foto, capacidad, descripcion FROM habitaciones WHERE id_hotel = ?",
             arrayOf(hotelId.toString())
         )
     }
