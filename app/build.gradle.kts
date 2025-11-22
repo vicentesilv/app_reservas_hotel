@@ -45,7 +45,7 @@ dependencies {
     // Glide para carga eficiente de imágenes desde assets o URL
     implementation("com.github.bumptech.glide:glide:4.15.1")
     implementation(libs.androidx.recyclerview)
-
+    implementation(libs.androidx.cardview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

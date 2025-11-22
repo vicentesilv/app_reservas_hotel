@@ -20,11 +20,11 @@
       "telefono": "600-111-222",
       "foto": "images/hotel_sol_y_mar.jpg",
       "habitaciones": [
-        { "numero_habitacion": 1, "tipo": "Individual", "precio": 60.0, "foto": "images/hotel1_room1.jpg" },
-        { "numero_habitacion": 2, "tipo": "Doble", "precio": 70.0, "foto": "images/hotel1_room2.jpg" },
-        { "numero_habitacion": 3, "tipo": "Suite", "precio": 90.0, "foto": "images/hotel1_room3.jpg" },
-        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 110.0, "foto": "images/hotel1_room4.jpg" },
-        { "numero_habitacion": 5, "tipo": "Económica", "precio": 55.0, "foto": "images/hotel1_room5.jpg" }
+        { "numero_habitacion": 1, "tipo": "Individual", "precio": 60.0, "foto": "images/hotel1_room1.jpg","capacidad": 1, "descripcion": "Habitacion Individual perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" },
+        { "numero_habitacion": 2, "tipo": "Doble", "precio": 70.0, "foto": "images/hotel1_room2.jpg","capacidad": 2, "descripcion": "Habitacion Doble perfecta para familias" },
+        { "numero_habitacion": 3, "tipo": "Suite", "precio": 90.0, "foto": "images/hotel1_room3.jpg","capacidad": 4, "descripcion": "Habitacion Suite perfecta para vacaciones de lujo" },
+        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 110.0, "foto": "images/hotel1_room4.jpg","capacidad": 4, "descripcion": "Habitacion Familiar perfecta para vacaciones de familia" },
+        { "numero_habitacion": 5, "tipo": "Económica", "precio": 55.0, "foto": "images/hotel1_room5.jpg" ,"capacidad": 1, "descripcion": "Habitacion Economica perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" }
       ]
     },
     {
@@ -33,11 +33,11 @@
       "telefono": "600-222-333",
       "foto": "images/hotel_la_rivera.jpg",
       "habitaciones": [
-        { "numero_habitacion": 1, "tipo": "Individual", "precio": 65.0, "foto": "images/hotel2_room1.jpg" },
-        { "numero_habitacion": 2, "tipo": "Doble", "precio": 75.0, "foto": "images/hotel2_room2.jpg" },
-        { "numero_habitacion": 3, "tipo": "Suite", "precio": 95.0, "foto": "images/hotel2_room3.jpg" },
-        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 115.0, "foto": "images/hotel2_room4.jpg" },
-        { "numero_habitacion": 5, "tipo": "Económica", "precio": 60.0, "foto": "images/hotel2_room5.jpg" }
+        { "numero_habitacion": 1, "tipo": "Individual", "precio": 65.0, "foto": "images/hotel2_room1.jpg", "capacidad": 1, "descripcion": "Habitacion Individual perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" },
+        { "numero_habitacion": 2, "tipo": "Doble", "precio": 75.0, "foto": "images/hotel2_room2.jpg", "capacidad": 2, "descripcion": "Habitacion Doble perfecta para familias" },
+        { "numero_habitacion": 3, "tipo": "Suite", "precio": 95.0, "foto": "images/hotel2_room3.jpg", "capacidad": 4, "descripcion": "Habitacion Suite perfecta para vacaciones de lujo" },
+        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 115.0, "foto": "images/hotel2_room4.jpg", "capacidad": 4, "descripcion": "Habitacion Familiar perfecta para vacaciones de familia" },
+        { "numero_habitacion": 5, "tipo": "Económica", "precio": 60.0, "foto": "images/hotel2_room5.jpg", "capacidad": 1, "descripcion": "Habitacion Economica perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" }
       ]
     },
     {
@@ -46,11 +46,11 @@
       "telefono": "600-333-444",
       "foto": "images/hotel_montana_azul.jpg",
       "habitaciones": [
-        { "numero_habitacion": 1, "tipo": "Individual", "precio": 70.0, "foto": "images/hotel3_room1.jpg" },
-        { "numero_habitacion": 2, "tipo": "Doble", "precio": 80.0, "foto": "images/hotel3_room2.jpg" },
-        { "numero_habitacion": 3, "tipo": "Suite", "precio": 100.0, "foto": "images/hotel3_room3.jpg" },
-        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 120.0, "foto": "images/hotel3_room4.jpg" },
-        { "numero_habitacion": 5, "tipo": "Económica", "precio": 65.0, "foto": "images/hotel3_room5.jpg" }
+        { "numero_habitacion": 1, "tipo": "Individual", "precio": 70.0, "foto": "images/hotel3_room1.jpg", "capacidad": 1, "descripcion": "Habitacion Individual perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" },
+        { "numero_habitacion": 2, "tipo": "Doble", "precio": 80.0, "foto": "images/hotel3_room2.jpg", "capacidad": 2, "descripcion": "Habitacion Doble perfecta para familias" },
+        { "numero_habitacion": 3, "tipo": "Suite", "precio": 100.0, "foto": "images/hotel3_room3.jpg", "capacidad": 4, "descripcion": "Habitacion Suite perfecta para vacaciones de lujo" },
+        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 120.0, "foto": "images/hotel3_room4.jpg", "capacidad": 4, "descripcion": "Habitacion Familiar perfecta para vacaciones de familia" },
+        { "numero_habitacion": 5, "tipo": "Económica", "precio": 65.0, "foto": "images/hotel3_room5.jpg", "capacidad": 1, "descripcion": "Habitacion Economica perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" }
       ]
     },
     {
@@ -59,24 +59,24 @@
       "telefono": "600-444-555",
       "foto": "images/hotel_centro_plaza.jpg",
       "habitaciones": [
-        { "numero_habitacion": 1, "tipo": "Individual", "precio": 68.0, "foto": "images/hotel4_room1.jpg" },
-        { "numero_habitacion": 2, "tipo": "Doble", "precio": 78.0, "foto": "images/hotel4_room2.jpg" },
-        { "numero_habitacion": 3, "tipo": "Suite", "precio": 98.0, "foto": "images/hotel4_room3.jpg" },
-        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 118.0, "foto": "images/hotel4_room4.jpg" },
-        { "numero_habitacion": 5, "tipo": "Económica", "precio": 63.0, "foto": "images/hotel4_room5.jpg" }
+        { "numero_habitacion": 1, "tipo": "Individual", "precio": 68.0, "foto": "images/hotel4_room1.jpg", "capacidad": 1, "descripcion": "Habitacion Individual perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" },
+        { "numero_habitacion": 2, "tipo": "Doble", "precio": 78.0, "foto": "images/hotel4_room2.jpg", "capacidad": 2, "descripcion": "Habitacion Doble perfecta para familias" },
+        { "numero_habitacion": 3, "tipo": "Suite", "precio": 98.0, "foto": "images/hotel4_room3.jpg", "capacidad": 4, "descripcion": "Habitacion Suite perfecta para vacaciones de lujo" },
+        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 118.0, "foto": "images/hotel4_room4.jpg", "capacidad": 4, "descripcion": "Habitacion Familiar perfecta para vacaciones de familia" },
+        { "numero_habitacion": 5, "tipo": "Económica", "precio": 63.0, "foto": "images/hotel4_room5.jpg", "capacidad": 1, "descripcion": "Habitacion Economica perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" }
       ]
     },
     {
       "nombre": "Hotel Jardín del Lago",
       "direccion": "Paseo del Lago 9",
       "telefono": "600-555-666",
-      "foto": "images/images/hotel_jardin_lago.jpg",
+      "foto": "images/hotel_jardin_lago.jpg",
       "habitaciones": [
-        { "numero_habitacion": 1, "tipo": "Individual", "precio": 72.0, "foto": "images/hotel5_room1.jpg" },
-        { "numero_habitacion": 2, "tipo": "Doble", "precio": 82.0, "foto": "images/hotel5_room2.jpg" },
-        { "numero_habitacion": 3, "tipo": "Suite", "precio": 102.0, "foto": "images/hotel5_room3.jpg" },
-        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 122.0, "foto": "images/hotel5_room4.jpg" },
-        { "numero_habitacion": 5, "tipo": "Económica", "precio": 67.0, "foto": "images/hotel5_room5.jpg" }
+        { "numero_habitacion": 1, "tipo": "Individual", "precio": 72.0, "foto": "images/hotel5_room1.jpg", "capacidad": 2, "descripcion": "Habitacion Individual perfecta para viajes de negocio" },
+        { "numero_habitacion": 2, "tipo": "Doble", "precio": 82.0, "foto": "images/hotel5_room2.jpg", "capacidad": 2, "descripcion": "Habitacion Doble perfecta para familias" },
+        { "numero_habitacion": 3, "tipo": "Suite", "precio": 102.0, "foto": "images/hotel5_room3.jpg", "capacidad": 4, "descripcion": "Habitacion Suite perfecta para vacaciones de lujo" },
+        { "numero_habitacion": 4, "tipo": "Familiar", "precio": 122.0, "foto": "images/hotel5_room4.jpg", "capacidad": 4, "descripcion": "Habitacion Familiar perfecta para vacaciones de familia" },
+        { "numero_habitacion": 5, "tipo": "Económica", "precio": 67.0, "foto": "images/hotel5_room5.jpg", "capacidad": 1, "descripcion": "Habitacion Economica perfecta para vacaciones de negocios sin necesidad de un presupuesto alto" }
       ]
     }
   ]
