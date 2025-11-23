@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -73,8 +74,15 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 .trimIndent()
         )
 
+        // Intentar poblar la base desde assets/data.json solo si no hay hoteles
         db?.let {
-            insertFromAssets(it)
+            try {
+                if (!hasData(it, "HOTELES")) {
+                    insertFromAssets(it)
+                }
+            } catch (_: Exception) {
+                // Silenciar fallos de inserción automática para no romper onCreate
+            }
         }
     }
 
@@ -104,9 +112,11 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
      * Intenta leer `assets/data.json` y poblar la base.
      */
     private fun insertFromAssets(db: SQLiteDatabase): Boolean {
+        Log.d("DatabaseHelper", "insertFromAssets: starting import from assets/data.json")
         val jsonString: String = try {
             context.assets.open("data.json").bufferedReader().use { it.readText() }
-        } catch (_: IOException) {
+        } catch (e: IOException) {
+            Log.e("DatabaseHelper", "insertFromAssets: cannot open data.json", e)
             return false
         }
 
@@ -127,6 +137,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             val usuariosArray = root.optJSONArray("usuarios") ?: JSONArray()
 
             var insertedAny = false
+            var hotelsInserted = 0
             db.beginTransaction()
             try {
                 // Insertar hoteles y habitaciones
@@ -148,7 +159,11 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     }
 
                     val hotelId = db.insert("HOTELES", null, hv)
-                    if (hotelId == -1L) continue
+                    if (hotelId == -1L) {
+                        Log.w("DatabaseHelper", "insertFromAssets: failed to insert hotel $nombre")
+                        continue
+                    }
+                    hotelsInserted++
                     insertedAny = true
 
                     val habitacionesArray = hObj.optJSONArray("habitaciones") ?: JSONArray()
@@ -173,11 +188,15 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                                 put("foto", fotoHabitacion)
                             }
                         }
-                        db.insert("habitaciones", null, rv)
+                        val rid = db.insert("habitaciones", null, rv)
+                        if (rid == -1L) {
+                            Log.w("DatabaseHelper", "insertFromAssets: failed to insert habitacion #$numero for hotelId=$hotelId")
+                        }
                     }
                 }
 
                 // Insertar usuarios
+                var usersInserted = 0
                 for (i in 0 until usuariosArray.length()) {
                     val uObj = usuariosArray.optJSONObject(i) ?: continue
                     val username = uObj.optString("username", "")
@@ -193,18 +212,36 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         if (age >= 0) put("age", age)
                         if (!number.isNullOrEmpty()) put("number", number)
                     }
-                    db.insertWithOnConflict("usuarios", null, uv, SQLiteDatabase.CONFLICT_IGNORE)
-                    insertedAny = true
+                    val ures = db.insertWithOnConflict("usuarios", null, uv, SQLiteDatabase.CONFLICT_IGNORE)
+                    if (ures != -1L) usersInserted++
+                    insertedAny = insertedAny || (ures != -1L)
                 }
 
                 db.setTransactionSuccessful()
+                Log.d("DatabaseHelper", "insertFromAssets: transaction successful - hotelsInserted=$hotelsInserted usersInserted=$usersInserted")
             } finally {
                 db.endTransaction()
             }
 
             return insertedAny
-        } catch (_: JSONException) {
+        } catch (e: JSONException) {
+            Log.e("DatabaseHelper", "insertFromAssets: JSON error", e)
             return false
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "insertFromAssets: unexpected error", e)
+            return false
+        }
+    }
+
+    // Public helper to trigger import from assets (useful for debugging)
+    fun importFromAssetFile(): Boolean {
+        val db = this.writableDatabase
+        try {
+            val ok = insertFromAssets(db)
+            Log.d("DatabaseHelper", "importFromAssetFile: result=$ok")
+            return ok
+        } finally {
+            try { db.close() } catch (_: Exception) {}
         }
     }
 
@@ -488,5 +525,78 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
             0
         }
         return rows > 0
+    }
+
+    @Suppress("unused")
+    fun insertSampleDataIfEmpty() {
+        val db = this.writableDatabase
+        try {
+            // Comprueba si ya hay datos
+            val c = db.rawQuery("SELECT COUNT(*) FROM HOTELES", null)
+            var hotelsCount = 0
+            c.use {
+                if (it.moveToFirst()) hotelsCount = it.getInt(0)
+            }
+
+            if (hotelsCount > 0) return // ya tiene datos
+
+            db.beginTransaction()
+            try {
+                // Insertar 2 hoteles de ejemplo
+                val hv1 = ContentValues().apply {
+                    put("nombre", "Hotel Sol y Mar")
+                    put("direccion", "Av. del Mar 123")
+                    put("telefono", "600-111-222")
+                    putNull("foto")
+                }
+                val hid1 = db.insert("HOTELES", null, hv1)
+
+                val hv2 = ContentValues().apply {
+                    put("nombre", "Hotel La Rivera")
+                    put("direccion", "Calle Rivera 45")
+                    put("telefono", "600-222-333")
+                    putNull("foto")
+                }
+                val hid2 = db.insert("HOTELES", null, hv2)
+
+                // Habitaciones para hotel 1
+                val r1 = ContentValues().apply {
+                    put("id_hotel", hid1)
+                    put("numero_habitacion", 1)
+                    put("tipo", "Individual")
+                    put("precio", 60.0)
+                    put("capacidad", 1)
+                    put("descripcion", "Habitacion Individual perfecta para vacaciones o viajes de negocios.")
+                }
+                db.insert("habitaciones", null, r1)
+
+                val r2 = ContentValues().apply {
+                    put("id_hotel", hid1)
+                    put("numero_habitacion", 2)
+                    put("tipo", "Doble")
+                    put("precio", 70.0)
+                    put("capacidad", 2)
+                    put("descripcion", "Habitacion Doble perfecta para familias")
+                }
+                db.insert("habitaciones", null, r2)
+
+                // Habitaciones para hotel 2
+                val r3 = ContentValues().apply {
+                    put("id_hotel", hid2)
+                    put("numero_habitacion", 1)
+                    put("tipo", "Suite")
+                    put("precio", 90.0)
+                    put("capacidad", 4)
+                    put("descripcion", "Habitacion Suite perfecta para vacaciones de lujo")
+                }
+                db.insert("habitaciones", null, r3)
+
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+        } finally {
+            try { db.close() } catch (_: Exception) {}
+        }
     }
 }

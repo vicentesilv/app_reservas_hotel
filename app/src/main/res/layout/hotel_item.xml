@@ -21,19 +21,19 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="175dp"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:gravity="center_vertical">
+            android:padding="12dp">
 
             <ImageView
                 android:id="@+id/hotelImage"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="@string/header_avatar_desc"
+                android:layout_width="133dp"
+                android:layout_height="125dp"
                 android:layout_marginEnd="12dp"
                 android:adjustViewBounds="true"
+                android:contentDescription="@string/header_avatar_desc"
+                android:scaleType="centerCrop"
                 app:srcCompat="@drawable/ic_launcher_foreground" />
 
             <LinearLayout
@@ -46,29 +46,29 @@
                     android:id="@+id/hotelName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:textColor="@android:color/black"
+                    android:ellipsize="end"
                     android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/hotelAddr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:textColor="#444444"
-                    android:paddingTop="4dp"
+                    android:ellipsize="end"
                     android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:paddingTop="4dp"
+                    android:textColor="#444444"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/hotelPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    android:paddingTop="6dp"
                     android:textColor="#444444"
-                    android:paddingTop="6dp" />
+                    android:textSize="14sp" />
 
             </LinearLayout>
 

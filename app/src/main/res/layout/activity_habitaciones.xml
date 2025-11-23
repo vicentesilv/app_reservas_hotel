@@ -44,7 +44,6 @@
                 android:contentDescription="@string/menu"
                 android:tint="@color/black" />
 
-            <!-- SearchView a la derecha dentro del Toolbar (mismo id que en hoteles para compatibilidad) -->
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
                 android:layout_width="wrap_content"
@@ -58,7 +57,6 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Opcional: mantener un texto de cabecera igual que en hoteles (puedes ocultarlo si no lo quieres) -->
         <TextView
             android:id="@+id/txtWelcomeRooms"
             android:layout_width="match_parent"
