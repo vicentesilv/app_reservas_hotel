@@ -50,6 +50,7 @@
                         android:layout_marginStart="8dp"
                         android:textAlignment="textEnd"
                         android:textStyle="bold"
+                        android:textColor="@color/black"
                         tools:text="#201" />
 
                     <TextView
@@ -57,7 +58,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-
+                        android:textColor="@color/black"
                         tools:text="Habitación Doble con Vista al Mar" />
 
                 </LinearLayout>
@@ -84,6 +85,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="0dp"
+                        android:textColor="@color/black"
                         tools:text="Capacidad: " />
 
                 </LinearLayout>
@@ -94,6 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="0dp"
+                    android:textColor="@color/black"
                     tools:text="Una breve descripción de la habitación, sus comodidades y las vistas que ofrece." />
 
             </LinearLayout>

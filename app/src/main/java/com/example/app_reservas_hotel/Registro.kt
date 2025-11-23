@@ -49,8 +49,7 @@ class Registro : AppCompatActivity() {
                 val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
                 prefs.edit().putString("logged_username", username).apply()
 
-                val intent = Intent(this, HotelesActivity::class.java)
-                intent.putExtra("username", username)
+                val intent = Intent(this, Login::class.java)
                 startActivity(intent)
                 finish()
             } else {

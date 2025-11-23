@@ -47,5 +47,6 @@
     <!-- Icon/accessibility texts -->
     <string name="back">Atrás</string>
     <string name="menu">Menú</string>
+    <string name="room_image">Imagen de la habitación</string>
 
 </resources>

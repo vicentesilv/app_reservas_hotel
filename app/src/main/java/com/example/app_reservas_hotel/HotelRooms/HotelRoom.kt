@@ -6,7 +6,9 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,11 +16,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.app_reservas_hotel.DatabaseHelper
 import com.example.app_reservas_hotel.R
 import com.google.android.material.navigation.NavigationView
+import android.widget.ImageView
 
 class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private var currentUsername: String? = null
+    private lateinit var adapter: RoomAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +32,7 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         val dbHelper = DatabaseHelper(this)
         dbHelper.insertSampleDataIfEmpty()
 
-        // Configurar toolbar y botones (back + menu)
+        // Configurar toolbar y botones (back + menú)
         val toolbar = findViewById<Toolbar>(R.id.navbarRoom)
         setSupportActionBar(toolbar)
 
@@ -60,6 +64,42 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         }
 
         initRecyclerView()
+
+        // conectar SearchView para búsqueda en tiempo real
+        try {
+            val searchView = findViewById<SearchView>(R.id.searchView)
+
+            // Personalizaciones visuales: icono, colores de texto/hint
+            try {
+                val magIcon = searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)
+                magIcon?.setImageResource(R.drawable.ic_search)
+                magIcon?.setColorFilter(ContextCompat.getColor(this, R.color.black))
+
+                val searchEditText = searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
+                searchEditText?.setTextColor(ContextCompat.getColor(this, R.color.black))
+                searchEditText?.setHintTextColor(ContextCompat.getColor(this, R.color.black))
+
+                val plate = searchView.findViewById<android.view.View>(androidx.appcompat.R.id.search_plate)
+                plate?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+                searchView.setPadding(8, 0, 8, 0)
+            } catch (_: Exception) {
+            }
+
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    adapter.filter(query ?: "")
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    adapter.filter(newText ?: "")
+                    return true
+                }
+            })
+        } catch (_: Exception) {
+            // Si no existe el SearchView, no hacer nada
+        }
 
         // marcar un item por defecto (opcional)
         try {
@@ -132,7 +172,8 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
 
         val recyclerView = findViewById<RecyclerView>(R.id.VistaHabitaciones)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = RoomAdapter(roomList)
+        adapter = RoomAdapter(roomList)
+        recyclerView.adapter = adapter
     }
 
     override fun onNavigationItemSelected(item: android.view.MenuItem): Boolean {

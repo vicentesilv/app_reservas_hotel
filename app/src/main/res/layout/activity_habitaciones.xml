@@ -32,7 +32,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_arrow_back"
                 android:contentDescription="@string/back"
-                android:tint="@color/black" />
+                app:tint="@color/black" />
 
             <!-- Botón menú (abre drawer) -->
             <ImageButton
@@ -42,7 +42,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_menu"
                 android:contentDescription="@string/menu"
-                android:tint="@color/black" />
+                app:tint="@color/black" />
 
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/welcome"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:padding="16dp"
             android:textSize="18sp"
             android:visibility="gone" />
