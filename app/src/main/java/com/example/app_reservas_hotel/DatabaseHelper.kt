@@ -208,6 +208,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
+    @Suppress("unused")
     private fun hasData(db: SQLiteDatabase, table: String): Boolean {
         val cursor: Cursor = db.rawQuery("SELECT COUNT(*) FROM $table", null)
         cursor.use {
@@ -215,6 +216,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
+    @Suppress("unused")
     fun mostrarDatosPrueba(db: SQLiteDatabase): String {
         val sb = StringBuilder()
         val usuariosCursor = db.rawQuery("SELECT id, username, name, age, number FROM usuarios", null)
@@ -281,6 +283,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         return sb.toString()
     }
 
+    @Suppress("unused")
     fun mostrarDatosPrueba(): String {
         val db = this.readableDatabase
         try {
@@ -290,6 +293,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
+    @Suppress("unused")
     fun registrarUsuario(username: String, password: String): Boolean {
         // Mantener firma antigua para compatibilidad; sobrecarga con más campos disponible
         return registrarUsuario(username, password, null, null, null)
@@ -311,12 +315,16 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
 
     fun iniciarSesion(username: String, password: String): Boolean {
         val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT id FROM usuarios WHERE name = ? AND password = ?",
-            arrayOf(username, password)
-        )
-        cursor.use {
-            return it.count > 0
+        try {
+            val cursor = db.rawQuery(
+                "SELECT id FROM usuarios WHERE username = ? AND password = ?",
+                arrayOf(username, password)
+            )
+            cursor.use {
+                return it.count > 0
+            }
+        } finally {
+            db.close()
         }
     }
 
@@ -340,6 +348,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         )
     }
 
+    @Suppress("unused")
     fun mostrarReservasPorUsuario(db: SQLiteDatabase, userId: Long): Cursor {
         return db.rawQuery(
             "SELECT id, id_hotel, id_habitacion, nombre, fecha_entrada, fecha_salida, numero_habitacion FROM reservas WHERE id_usuario = ?",
@@ -362,6 +371,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         return result != -1L
     }
 
+    @Suppress("unused")
     fun cancelarReserva(reservaId: Long): Boolean {
         val db = this.writableDatabase
         val result = db.delete("reservas", "id = ?", arrayOf(reservaId.toString()))
@@ -369,6 +379,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     }
 
     // Métodos para obtener información específica con fotos
+    @Suppress("unused")
     fun obtenerHotelConFoto(hotelId: Long): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
@@ -377,6 +388,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         )
     }
 
+    @Suppress("unused")
     fun obtenerHabitacionConFoto(habitacionId: Long): Cursor {
         val db = this.readableDatabase
         return db.rawQuery(
@@ -385,6 +397,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         )
     }
 
+    @Suppress("unused")
     fun normalizeFotoPathsInDb() {
         val db = this.writableDatabase
         try {
@@ -443,6 +456,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     }
 
     // Nuevo: actualizar campos de usuario por username
+    @Suppress("unused")
     fun actualizarUsuarioPorUsername(username: String, name: String? = null, age: Int? = null, number: String? = null): Boolean {
         val db = this.writableDatabase
         val values = ContentValues().apply {

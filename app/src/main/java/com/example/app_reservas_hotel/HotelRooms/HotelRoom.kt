@@ -2,7 +2,11 @@ package com.example.app_reservas_hotel.HotelRooms
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.app_reservas_hotel.DatabaseHelper
@@ -12,12 +16,30 @@ class HotelRoom : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_habitaciones)
+
+        // Configurar toolbar y botones (back + menu)
+        val toolbar = findViewById<Toolbar>(R.id.navbarRoom)
+        setSupportActionBar(toolbar)
+
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout_rooms)
+        val btnBack = findViewById<ImageButton>(R.id.btnBackRooms)
+        val btnMenu = findViewById<ImageButton>(R.id.btnMenuRooms)
+
+        btnBack.setOnClickListener {
+            // vuelve a la actividad anterior
+            finish()
+        }
+
+        btnMenu.setOnClickListener {
+            // abre el drawer navigation
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
         initRecyclerView()
     }
 
     private fun initRecyclerView(){
         val hotelId = intent.getIntExtra("HOTEL_ID", -1)
-        val currentUsername=intent.getStringExtra("username")
         if (hotelId == -1) {
             Log.e("HotelRoom", "Error: No HOTEL_ID was provided in the intent.")
             return

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout_rooms"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
+    <!-- Contenido principal replicando el estilo de activity_hoteles -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/bg_gradient"
+        tools:context=".HabitacionesActivity">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/navbarRoom"
@@ -21,7 +24,27 @@
             app:title="@string/habitaciones_nav"
             app:titleTextColor="@color/black">
 
-            <!-- SearchView a la derecha dentro del Toolbar -->
+            <!-- Botón flecha atrás -->
+            <ImageButton
+                android:id="@+id/btnBackRooms"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="@string/back"
+                android:tint="@color/black" />
+
+            <!-- Botón menú (abre drawer) -->
+            <ImageButton
+                android:id="@+id/btnMenuRooms"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_menu"
+                android:contentDescription="@string/menu"
+                android:tint="@color/black" />
+
+            <!-- SearchView a la derecha dentro del Toolbar (mismo id que en hoteles para compatibilidad) -->
             <androidx.appcompat.widget.SearchView
                 android:id="@+id/searchView"
                 android:layout_width="wrap_content"
@@ -35,12 +58,40 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+        <!-- Opcional: mantener un texto de cabecera igual que en hoteles (puedes ocultarlo si no lo quieres) -->
+        <TextView
+            android:id="@+id/txtWelcomeRooms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome"
+            android:textColor="@color/white"
+            android:padding="16dp"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/VistaHabitaciones"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="24dp"
+            android:clipToPadding="false"
             android:scrollbars="vertical" />
 
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Navigation drawer (mismo header y menú que activity_hoteles) -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view_rooms"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header_hotels"
+        app:menu="@menu/drawer_menu"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

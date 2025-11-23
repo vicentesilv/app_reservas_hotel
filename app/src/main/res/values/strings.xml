@@ -44,4 +44,8 @@
     <string name="habitaciones_nav">Habitaciones</string>
     <string name="HotelName"></string>
 
+    <!-- Icon/accessibility texts -->
+    <string name="back">Atrás</string>
+    <string name="menu">Menú</string>
+
 </resources>
