@@ -40,7 +40,7 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         navigationView = findViewById<NavigationView>(R.id.navigation_view_rooms)
         navigationView.setNavigationItemSelectedListener(this)
 
-        // Inicializar header del drawer con el username (si viene)
+        // Inicializa header del drawer con el username (si viene)
         val header = navigationView.getHeaderView(0)
         val headerUsername = header?.findViewById<TextView>(R.id.headerUsername)
         val intentUsername = intent.getStringExtra("username")
