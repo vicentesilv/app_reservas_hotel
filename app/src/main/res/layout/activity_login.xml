@@ -85,25 +85,26 @@
             android:layout_marginTop="4dp"
             android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/BtnLogin"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/btn_primary"
-                android:text="Ingresar"
-                android:textAllCaps="false"
-                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btn_redirect_register"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_primary"
                 android:text="Registrarse"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/BtnLogin"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+
+                android:layout_weight="1"
+                android:background="@drawable/btn_primary"
+                android:text="Ingresar"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 

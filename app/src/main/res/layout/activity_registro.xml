@@ -155,24 +155,24 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/BtnLogin"
+                android:id="@+id/btn_redirect_register"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_primary"
-                android:text="registrarse"
+                android:text="ir a iniciar sesion"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/btn_redirect_register"
+                android:id="@+id/BtnLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/btn_primary"
-                android:text="ir a iniciar sesion"
+                android:text="registrarse"
                 android:textAllCaps="false"
                 android:textStyle="bold" />
 
