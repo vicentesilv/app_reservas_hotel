@@ -75,4 +75,21 @@
     <!-- Título de la actividad crear reserva -->
     <string name="title_crear_reserva">Crear reserva</string>
 
+    <!-- Cadenas para dialog_edit_reserva -->
+    <string name="dialog_edit_title">Selecciona nuevas fechas</string>
+    <string name="dialog_entrada_placeholder">Entrada: --</string>
+    <string name="dialog_salida_placeholder">Salida: --</string>
+    <string name="dialog_selection_help">Selecciona la fecha de entrada o salida usando el calendario</string>
+    <string name="btn_update_dates">Actualizar fechas</string>
+
+    <!-- Cadenas usadas en VerReservasActivity (mensajes/alerts) -->
+    <string name="delete_reserva_title">Eliminar reserva</string>
+    <string name="delete_reserva_message">¿Deseas eliminar esta reserva?</string>
+    <string name="reserva_eliminada">Reserva eliminada</string>
+    <string name="reserva_eliminada_error">No se pudo eliminar la reserva</string>
+    <string name="usuario_no_identificado">Usuario no identificado</string>
+    <string name="fechas_actualizadas">Fechas actualizadas</string>
+    <string name="fechas_actualizadas_error">No se pudieron actualizar las fechas</string>
+    <string name="fecha_entrada_posterior_error">La fecha de entrada no puede ser posterior a la de salida</string>
+    <string name="no_reservas">No hay reservas</string>
 </resources>

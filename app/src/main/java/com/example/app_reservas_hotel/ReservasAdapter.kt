@@ -10,6 +10,10 @@ class ReservasAdapter : RecyclerView.Adapter<ReservasAdapter.VH>() {
 
     private val items = mutableListOf<Reserva>()
 
+    // Callbacks que la Activity puede asignar
+    var onEdit: ((Reserva) -> Unit)? = null
+    var onDelete: ((Reserva) -> Unit)? = null
+
     fun submitList(list: List<Reserva>) {
         items.clear()
         items.addAll(list)
@@ -31,6 +35,8 @@ class ReservasAdapter : RecyclerView.Adapter<ReservasAdapter.VH>() {
         private val tvHotelName: TextView = itemView.findViewById(R.id.tvHotelName)
         private val tvFechas: TextView = itemView.findViewById(R.id.tvFechasReserva)
         private val tvEstado: TextView = itemView.findViewById(R.id.tvEstadoReserva)
+        private val btnEdit: View? = itemView.findViewById(R.id.btnEditReserva)
+        private val btnDelete: View? = itemView.findViewById(R.id.btnDeleteReserva)
 
         fun bind(r: Reserva) {
             // Mostrar el nombre del hotel y número de habitación como encabezado
@@ -38,6 +44,27 @@ class ReservasAdapter : RecyclerView.Adapter<ReservasAdapter.VH>() {
             tvHotelName.text = header
             tvFechas.text = "Entrada: ${r.fechaEntrada} — Salida: ${r.fechaSalida}"
             tvEstado.text = "Reservado por: ${r.nombre}"
+
+            // Asignar listeners; usamos getTag para recuperar la reserva desde la view cuando la Activity quiera manejar
+            itemView.tag = r
+            btnEdit?.setOnClickListener {
+                // Propagar evento hacia el adapter (la Activity debe asignar onEdit)
+                val parent = itemView.parent
+                // búsqueda del adapter desde el contexto: subimos hasta encontrar RecyclerView y adaptador
+                var adapter: ReservasAdapter? = null
+                try {
+                    adapter = (itemView.parent as? androidx.recyclerview.widget.RecyclerView)?.adapter as? ReservasAdapter
+                } catch (_: Exception) {}
+                if (adapter != null) adapter.onEdit?.invoke(r)
+            }
+
+            btnDelete?.setOnClickListener {
+                var adapter: ReservasAdapter? = null
+                try {
+                    adapter = (itemView.parent as? androidx.recyclerview.widget.RecyclerView)?.adapter as? ReservasAdapter
+                } catch (_: Exception) {}
+                if (adapter != null) adapter.onDelete?.invoke(r)
+            }
         }
     }
 }

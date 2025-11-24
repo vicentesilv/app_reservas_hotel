@@ -487,6 +487,76 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
+    // Actualiza las fechas de una reserva por id
+    fun actualizarFechasReserva(reservaId: Long, nuevaEntrada: String, nuevaSalida: String): Boolean {
+        val db = this.writableDatabase
+        try {
+            val cv = ContentValues().apply {
+                put("fecha_entrada", nuevaEntrada)
+                put("fecha_salida", nuevaSalida)
+            }
+            val rows = db.update("reservas", cv, "id = ?", arrayOf(reservaId.toString()))
+            return rows > 0
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "actualizarFechasReserva failed", e)
+            return false
+        } finally {
+            try { db.close() } catch (_: Exception) {}
+        }
+    }
+
+    // Cancelar reserva y restaurar numero_habitacion de la habitación asociada
+    fun cancelarReservaConRestauracion(reservaId: Long): Boolean {
+        val db = this.writableDatabase
+        try {
+            db.beginTransaction()
+            // Obtener id_habitacion de la reserva
+            var habitacionId: Long = -1L
+            try {
+                val cur = db.rawQuery("SELECT id_habitacion FROM reservas WHERE id = ?", arrayOf(reservaId.toString()))
+                cur.use {
+                    if (it.moveToFirst()) {
+                        habitacionId = try { it.getLong(0) } catch (_: Exception) { -1L }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "cancelarReservaConRestauracion: error leyendo reserva", e)
+                return false
+            }
+
+            if (habitacionId <= 0L) {
+                Log.e("DatabaseHelper", "cancelarReservaConRestauracion: reserva no encontrada id=$reservaId")
+                return false
+            }
+
+            // Eliminar la reserva
+            val deleted = db.delete("reservas", "id = ?", arrayOf(reservaId.toString()))
+            if (deleted <= 0) {
+                Log.e("DatabaseHelper", "cancelarReservaConRestauracion: no se pudo eliminar reserva id=$reservaId")
+                return false
+            }
+
+            // Incrementar numero_habitacion (restaurar disponibilidad)
+            val updated = db.compileStatement("UPDATE habitaciones SET numero_habitacion = numero_habitacion + 1 WHERE id = ?").apply {
+                bindLong(1, habitacionId)
+            }.executeUpdateDelete()
+
+            if (updated <= 0) {
+                Log.e("DatabaseHelper", "cancelarReservaConRestauracion: no se pudo actualizar habitacion id=$habitacionId")
+                return false
+            }
+
+            db.setTransactionSuccessful()
+            return true
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "cancelarReservaConRestauracion transaction failed", e)
+            return false
+        } finally {
+            try { db.endTransaction() } catch (_: Exception) {}
+            try { db.close() } catch (_: Exception) {}
+        }
+    }
+
     @Suppress("unused")
     fun cancelarReserva(reservaId: Long): Boolean {
         val db = this.writableDatabase

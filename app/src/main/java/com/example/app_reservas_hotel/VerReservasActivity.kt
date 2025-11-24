@@ -1,16 +1,24 @@
 package com.example.app_reservas_hotel
 
+import android.app.AlertDialog
 import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
+import android.widget.CalendarView
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import android.graphics.Typeface
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.concurrent.thread
 
 class VerReservasActivity : AppCompatActivity() {
@@ -18,10 +26,11 @@ class VerReservasActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var rv: RecyclerView
     private lateinit var adapter: ReservasAdapter
-    private lateinit var swipe: SwipeRefreshLayout
     private lateinit var progress: ProgressBar
     private lateinit var tvEmpty: TextView
     private var currentUserId: Long = -1L
+
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,16 +46,47 @@ class VerReservasActivity : AppCompatActivity() {
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
 
-        swipe = findViewById<SwipeRefreshLayout>(R.id.swipeRefreshReservas)
         progress = findViewById(R.id.progressReservas)
         tvEmpty = findViewById(R.id.tvEmptyReservas)
 
-        swipe.setOnRefreshListener(object : SwipeRefreshLayout.OnRefreshListener {
-            override fun onRefresh() {
-                cargarReservas()
-            }
-        })
+        // Conectar callbacks para editar y eliminar
+        adapter.onEdit = { reserva ->
+            showEditDialog(reserva)
+        }
+        adapter.onDelete = { reserva ->
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.delete_reserva_title))
+                .setMessage(getString(R.string.delete_reserva_message))
+                .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                    dialog.dismiss()
+                    progress.visibility = View.VISIBLE
+                    thread {
+                        val ok = try {
+                            dbHelper.cancelarReservaConRestauracion(reserva.id)
+                        } catch (e: Exception) {
+                            Log.e("VerReservasActivity", "Error al eliminar reserva", e)
+                            false
+                        }
+                        runOnUiThread {
+                            progress.visibility = View.GONE
+                            if (ok) {
+                                Toast.makeText(this, getString(R.string.reserva_eliminada), Toast.LENGTH_SHORT).show()
+                                cargarReservas()
+                            } else {
+                                Toast.makeText(this, getString(R.string.reserva_eliminada_error), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+                .setNegativeButton(android.R.string.no, null)
+                .show()
+        }
 
+        // Resolver user id y cargar
+        resolveUserAndLoad()
+    }
+
+    private fun resolveUserAndLoad() {
         // Resolver user id: priorizar USER_ID pasado explícitamente
         var userId = intent.getLongExtra("USER_ID", -1L)
 
@@ -61,8 +101,7 @@ class VerReservasActivity : AppCompatActivity() {
                             userId = try { it.getLong(0) } catch (_: Exception) { -1L }
                         }
                     }
-                } catch (_: Exception) {
-                }
+                } catch (_: Exception) {}
             }
         }
 
@@ -78,37 +117,165 @@ class VerReservasActivity : AppCompatActivity() {
                             userId = try { it.getLong(0) } catch (_: Exception) { -1L }
                         }
                     }
-                } catch (_: Exception) {
-                }
+                } catch (_: Exception) {}
             }
-
-            // Añadir log que muestre valores usados para la resolución del usuario
             try {
                 val intentUser = intent.getStringExtra("username")
-                android.util.Log.d("VerReservasActivity", "resolveUser: intent.USER_ID=${intent.getLongExtra("USER_ID", -1L)}, intent.username=$intentUser, storedUsername=$storedUsername, resolvedUserId=$userId")
+                Log.d("VerReservasActivity", "resolveUser: intent.USER_ID=${intent.getLongExtra("USER_ID", -1L)}, intent.username=$intentUser, storedUsername=$storedUsername, resolvedUserId=$userId")
             } catch (_: Exception) {}
         }
 
         if (userId <= 0L) {
-            // No se puede identificar al usuario: mostrar mensaje y salir del intento de carga
             progress.visibility = View.GONE
-            swipe.isRefreshing = false
             tvEmpty.visibility = View.VISIBLE
-            tvEmpty.text = "Usuario no identificado"
+            tvEmpty.text = getString(R.string.usuario_no_identificado)
             return
         }
 
         currentUserId = userId
-
-        // Cargar reservas inicialmente
         cargarReservas()
+    }
+
+    private fun showEditDialog(reserva: Reserva) {
+        try {
+            val inflater = LayoutInflater.from(this)
+            val view = inflater.inflate(R.layout.dialog_edit_reserva, null)
+
+            // Nuevos IDs del layout con un único CalendarView
+            val tvFechaEntrada = view.findViewById<TextView>(R.id.tvFechaEntrada)
+            val tvFechaSalida = view.findViewById<TextView>(R.id.tvFechaSalida)
+            val tvSelectionHelp = view.findViewById<TextView>(R.id.tvSelectionHelp)
+            val calendarView = view.findViewById<CalendarView>(R.id.calendarViewReserva)
+            val btnUpdate = view.findViewById<Button>(R.id.btnUpdateDates)
+
+            // Parsear fechas actuales
+            var entradaMillis = try { dateFormat.parse(reserva.fechaEntrada)?.time ?: System.currentTimeMillis() } catch (_: Exception) { System.currentTimeMillis() }
+            var salidaMillis = try { dateFormat.parse(reserva.fechaSalida)?.time ?: (entradaMillis + 24*60*60*1000) } catch (_: Exception) { entradaMillis + 24*60*60*1000 }
+
+            // Mostrar en TextViews
+            tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
+            tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
+
+            // Estilo inicial: Entrada seleccionada por defecto
+            tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
+            tvFechaEntrada.setTypeface(null, Typeface.BOLD)
+            tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
+            tvFechaSalida.setTypeface(null, Typeface.NORMAL)
+            tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
+
+            // Configurar CalendarView
+            val calNow = Calendar.getInstance()
+            calNow.set(Calendar.HOUR_OF_DAY, 0)
+            calNow.set(Calendar.MINUTE, 0)
+            calNow.set(Calendar.SECOND, 0)
+            calNow.set(Calendar.MILLISECOND, 0)
+            val todayMillis = calNow.timeInMillis
+
+            calendarView.minDate = todayMillis
+            calendarView.date = entradaMillis
+
+            // Estado: true = elegir Entrada, false = elegir Salida
+            var selectingEntrada = true
+
+            // Clicks en TextViews para alternar target de selección
+            tvFechaEntrada.setOnClickListener {
+                selectingEntrada = true
+                tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                tvFechaEntrada.setTypeface(null, Typeface.BOLD)
+                tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
+                tvFechaSalida.setTypeface(null, Typeface.NORMAL)
+                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
+                tvSelectionHelp.text = getString(R.string.select_dates)
+            }
+
+            tvFechaSalida.setOnClickListener {
+                selectingEntrada = false
+                tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                tvFechaSalida.setTypeface(null, Typeface.BOLD)
+                tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
+                tvFechaEntrada.setTypeface(null, Typeface.NORMAL)
+                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
+                tvSelectionHelp.text = getString(R.string.select_dates)
+            }
+
+            // Listener del calendario: al seleccionar una fecha, actualizar la fecha correspondiente
+            calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
+                val selCal = Calendar.getInstance()
+                selCal.set(Calendar.YEAR, year)
+                selCal.set(Calendar.MONTH, month)
+                selCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                selCal.set(Calendar.HOUR_OF_DAY, 0)
+                selCal.set(Calendar.MINUTE, 0)
+                selCal.set(Calendar.SECOND, 0)
+                selCal.set(Calendar.MILLISECOND, 0)
+                val selMillis = selCal.timeInMillis
+
+                if (selectingEntrada) {
+                    entradaMillis = selMillis
+                    if (entradaMillis >= salidaMillis) {
+                        salidaMillis = entradaMillis + 24*60*60*1000
+                        tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
+                    }
+                    tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
+                } else {
+                    salidaMillis = selMillis
+                    if (salidaMillis <= entradaMillis) {
+                        entradaMillis = salidaMillis - 24*60*60*1000
+                        tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
+                    }
+                    tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
+                }
+
+                tvSelectionHelp.text = getString(R.string.rango_seleccionado, dateFormat.format(Date(entradaMillis)), dateFormat.format(Date(salidaMillis)))
+                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.highlight))
+            }
+
+            val dialog = AlertDialog.Builder(this)
+                .setView(view)
+                .create()
+
+            btnUpdate.setOnClickListener {
+                // Validar rango
+                if (entradaMillis > salidaMillis) {
+                    Toast.makeText(this, getString(R.string.fecha_entrada_posterior_error), Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val nuevaEntrada = dateFormat.format(Date(entradaMillis))
+                val nuevaSalida = dateFormat.format(Date(salidaMillis))
+
+                progress.visibility = View.VISIBLE
+                thread {
+                    val ok = try {
+                        dbHelper.actualizarFechasReserva(reserva.id, nuevaEntrada, nuevaSalida)
+                    } catch (e: Exception) {
+                        Log.e("VerReservasActivity", "Error actualizando fechas", e)
+                        false
+                    }
+
+                    runOnUiThread {
+                        progress.visibility = View.GONE
+                        if (ok) {
+                            Toast.makeText(this, getString(R.string.fechas_actualizadas), Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                            cargarReservas()
+                        } else {
+                            Toast.makeText(this, getString(R.string.fechas_actualizadas_error), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("VerReservasActivity", "showEditDialog error", e)
+        }
     }
 
     private fun cargarReservas() {
         val userId = currentUserId
         if (userId <= 0L) {
-            mostrarError("Usuario no identificado")
-            swipe.setRefreshing(false)
+            mostrarError(R.string.usuario_no_identificado)
             progress.visibility = View.GONE
             return
         }
@@ -118,7 +285,7 @@ class VerReservasActivity : AppCompatActivity() {
 
         thread {
             val lista = mutableListOf<Reserva>()
-            var db = dbHelper.readableDatabase
+            val db = dbHelper.readableDatabase
             var cursor: Cursor? = null
             try {
                 cursor = dbHelper.mostrarReservasPorUsuario(db, userId)
@@ -133,7 +300,6 @@ class VerReservasActivity : AppCompatActivity() {
                             val fechaSalida = c.getString(5)
                             val numeroHabitacion = try { c.getInt(6) } catch (_: Exception) { 0 }
 
-                            // Obtener nombre del hotel desde la tabla HOTELES
                             var hotelName = ""
                             try {
                                 val hc = db.rawQuery("SELECT nombre FROM HOTELES WHERE id = ?", arrayOf(idHotel.toString()))
@@ -170,11 +336,10 @@ class VerReservasActivity : AppCompatActivity() {
 
             runOnUiThread {
                 progress.visibility = View.GONE
-                swipe.setRefreshing(false)
                 if (lista.isEmpty()) {
                     adapter.submitList(emptyList())
                     tvEmpty.visibility = View.VISIBLE
-                    tvEmpty.text = "No hay reservas"
+                    tvEmpty.text = getString(R.string.no_reservas)
                 } else {
                     tvEmpty.visibility = View.GONE
                     adapter.submitList(lista)
@@ -183,8 +348,8 @@ class VerReservasActivity : AppCompatActivity() {
         }
     }
 
-    private fun mostrarError(msg: String) {
-        tvEmpty.text = msg
+    private fun mostrarError(msgResId: Int) {
+        tvEmpty.text = getString(msgResId)
         tvEmpty.visibility = View.VISIBLE
     }
 

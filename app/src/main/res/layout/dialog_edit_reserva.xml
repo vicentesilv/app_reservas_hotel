@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvEditTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_edit_title"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <!-- Fecha de entrada y salida (se actualizarán desde el CalendarView único) -->
+    <TextView
+        android:id="@+id/tvFechaEntrada"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_entrada_placeholder"
+        android:paddingTop="8dp" />
+
+    <TextView
+        android:id="@+id/tvFechaSalida"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_salida_placeholder"
+        android:paddingTop="4dp" />
+
+    <TextView
+        android:id="@+id/tvSelectionHelp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_selection_help"
+        android:paddingTop="8dp"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <CalendarView
+        android:id="@+id/calendarViewReserva"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnUpdateDates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_update_dates"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>
