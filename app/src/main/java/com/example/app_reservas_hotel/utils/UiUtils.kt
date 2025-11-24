@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import com.example.app_reservas_hotel.Login
@@ -67,9 +66,9 @@ object UiUtils {
     }
 
     fun getLoggedUsername(context: Context): String? {
+        // Delegar en PrefsUtils
         return try {
-            val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            prefs.getString("logged_username", null)
+            PrefsUtils.getLoggedUsername(context)
         } catch (_: Exception) { null }
     }
 
@@ -92,6 +91,10 @@ object UiUtils {
         }
     }
 
+    /**
+     * Maneja la selección de un item del NavigationView de forma centralizada.
+     * Devuelve true si fue manejado.
+     */
     fun handleNavigationSelection(activity: Activity, itemId: Int, drawer: DrawerLayout?, username: String? = null): Boolean {
         try {
             when (itemId) {
@@ -109,8 +112,8 @@ object UiUtils {
                     activity.startActivity(intent)
                 }
                 com.example.app_reservas_hotel.R.id.nav_logout -> {
-                    val prefs = activity.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-                    prefs.edit { remove("logged_username") }
+                    // Delegar limpieza de sesión a PrefsUtils
+                    try { PrefsUtils.clearLoggedUsername(activity) } catch (_: Exception) {}
                     val intent = Intent(activity, Login::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     activity.startActivity(intent)
@@ -127,6 +130,10 @@ object UiUtils {
         }
     }
 
+    /**
+     * Adjunta el comportamiento de selector de rango (entrada/salida) a un CalendarView y tres TextViews.
+     * onRangeChanged se invoca cada vez que cambia el rango con (entradaStr, salidaStr) en formato yyyy-MM-dd.
+     */
     fun attachCalendarRangeSelector(
         context: Context,
         calendar: CalendarView,

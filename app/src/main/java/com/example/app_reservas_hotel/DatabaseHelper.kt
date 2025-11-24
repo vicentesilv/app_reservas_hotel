@@ -79,7 +79,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         // Intentar poblar la base desde assets/data.json solo si no hay hoteles
         db?.let {
             try {
-                if (!hasData(it, "HOTELES")) {
+                if (!hasHoteles(it)) {
                     insertFromAssets(it)
                 }
             } catch (_: Exception) {
@@ -262,21 +262,10 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
-    // Public helper to trigger import from assets (useful for debugging)
-    fun importFromAssetFile(): Boolean {
-        val db = this.writableDatabase
-        try {
-            val ok = insertFromAssets(db)
-            Log.d("DatabaseHelper", "importFromAssetFile: result=$ok")
-            return ok
-        } finally {
-            try { db.close() } catch (_: Exception) {}
-        }
-    }
-
+    // Comprueba si hay entradas en la tabla HOTELES
     @Suppress("unused")
-    private fun hasData(db: SQLiteDatabase, table: String): Boolean {
-        val cursor: Cursor = db.rawQuery("SELECT COUNT(*) FROM $table", null)
+    private fun hasHoteles(db: SQLiteDatabase): Boolean {
+        val cursor: Cursor = db.rawQuery("SELECT COUNT(*) FROM HOTELES", null)
         cursor.use {
             return if (it.moveToFirst()) it.getInt(0) > 0 else false
         }

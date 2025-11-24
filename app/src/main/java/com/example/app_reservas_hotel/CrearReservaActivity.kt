@@ -6,20 +6,12 @@ import android.util.Log
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.CalendarView
-import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.core.view.GravityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import com.google.android.material.navigation.NavigationView
-import java.text.SimpleDateFormat
-import java.util.*
 import com.example.app_reservas_hotel.utils.UiUtils
 
 class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -70,14 +62,13 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
         val calendarView = findViewById<CalendarView>(R.id.calendarViewReserva)
 
         // Inicializar fechas: hoy y mañana
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
         val todayMillis = cal.timeInMillis
-        cal.add(Calendar.DAY_OF_MONTH, 1)
+        cal.add(java.util.Calendar.DAY_OF_MONTH, 1)
         val tomorrowMillis = cal.timeInMillis
 
         // Usar utilitario para manejar selector de rango y actualizaciones UI

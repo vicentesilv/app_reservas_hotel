@@ -13,7 +13,6 @@ import android.text.InputType
 import android.view.ViewGroup
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
@@ -153,7 +152,7 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
                     val dbUpdate = DatabaseHelper(this)
                     val success = try {
                         dbUpdate.actualizarCredencialesPorUsername(username, newPass, newNumber)
-                    } catch (ex: Exception) {
+                    } catch (_: Exception) {
                         false
                     }
                     try { dbUpdate.close() } catch (_: Exception) {}
@@ -205,6 +204,7 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
              R.id.nav_logout -> {
                  // limpiar sesión
                  val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                 // usar la API estándar: obtener editor, eliminar clave y aplicar
                  prefs.edit().remove("logged_username").apply()
                  val intent = Intent(this, Login::class.java)
                  intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
