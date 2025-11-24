@@ -31,6 +31,7 @@
                 android:layout_width="112dp"
                 android:layout_height="116dp"
                 android:scaleType="centerCrop"
+                android:contentDescription="@string/room_image"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
             <LinearLayout
@@ -38,30 +39,42 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
+                <!-- Nueva fila: etiqueta "Disponible:" + número -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/numerodisponible"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:text="@string/disponible_label" />
 
                     <TextView
                         android:id="@+id/tvNumber"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:textAlignment="textEnd"
                         android:textStyle="bold"
                         android:textColor="@color/black"
                         tools:text="#201" />
 
-                    <TextView
-                        android:id="@+id/tvType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:textColor="@color/black"
-                        tools:text="Habitación Doble con Vista al Mar" />
-
                 </LinearLayout>
+
+                <!-- Tipo en una nueva línea para evitar solapamientos -->
+                <TextView
+                    android:id="@+id/tvType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/black"
+                    tools:text="Habitación Doble con Vista al Mar" />
 
                 <TextView
                     android:id="@+id/tvPrice"

@@ -19,7 +19,7 @@
     <string name="welcome_user">Bienvenido, %1$s</string>
 
     <!-- Search -->
-    <string name="search_hint">Buscar hoteles...</string>
+    <string name="search_hint">Buscar hoteles…</string>
 
     <!-- MainActivity strings -->
     <string name="users_header">Usuarios</string>
@@ -42,11 +42,37 @@
 
     <!--Strings para las Habitaciones-->
     <string name="habitaciones_nav">Habitaciones</string>
-    <string name="HotelName"></string>
+    <string name="HotelName">Nombre del hotel</string>
+
+    <!-- Formatos usados en RoomViewHolder -->
+    <string name="room_number_format">#%1$d</string>
+    <string name="price_format">$%1$.2f USD</string>
 
     <!-- Icon/accessibility texts -->
     <string name="back">Atrás</string>
     <string name="menu">Menú</string>
     <string name="room_image">Imagen de la habitación</string>
+
+    <!-- Nuevo: etiqueta para mostrar disponibilidad antes del número -->
+    <string name="disponible_label">Disponible:</string>
+
+    <!-- Crear reserva -->
+    <string name="room_info_format">Hotel ID: %1$s - Habitación: %2$s</string>
+    <string name="hint_reserva_nombre">Nombre para la reserva</string>
+    <string name="btn_fecha_entrada">Entrada</string>
+    <string name="btn_fecha_salida">Salida</string>
+    <string name="btn_reservar">Reservar</string>
+    <string name="room_header_format">Reservar: %1$s - %2$s</string>
+    <!-- Formato genérico: etiqueta: valor -->
+    <string name="fecha_with_value">%1$s: %2$s</string>
+    <!-- Rango seleccionado -->
+    <string name="rango_seleccionado">Rango seleccionado: %1$s → %2$s</string>
+    <!-- Título del selector de fechas -->
+    <string name="select_dates">Seleccionar fechas</string>
+    <!-- Resultado/placeholder de búsqueda -->
+    <string name="search_result">Buscar: %1$s</string>
+
+    <!-- Título de la actividad crear reserva -->
+    <string name="title_crear_reserva">Crear reserva</string>
 
 </resources>

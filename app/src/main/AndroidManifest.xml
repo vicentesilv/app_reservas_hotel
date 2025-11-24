@@ -16,6 +16,7 @@
         <activity android:name=".MiInformacionActivity" />
         <activity android:name=".Login" />
         <activity android:name=".HotelRooms.HotelRoom" />
+        <activity android:name=".CrearReservaActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

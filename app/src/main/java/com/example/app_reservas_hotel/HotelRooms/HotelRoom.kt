@@ -135,9 +135,23 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                 return
             }
 
+            // Obtener el nombre del hotel para mostrar en la reserva
+            var hotelName: String? = null
+            try {
+                val hc = db.rawQuery("SELECT nombre FROM HOTELES WHERE id = ?", arrayOf(hotelId.toString()))
+                hc.use { cursorH ->
+                    if (cursorH.moveToFirst()) {
+                        hotelName = try { cursorH.getString(0) } catch (_: Exception) { null }
+                    }
+                }
+            } catch (_: Exception) {
+                hotelName = null
+            }
+
             val cursor = dbHelper.mostrarHabitacionesPorHotel(db, hotelId.toLong())
             cursor.use { c ->
                 // Get column indices once, before the loop
+                val idIndex = c.getColumnIndexOrThrow("id")
                 val numIndex = c.getColumnIndexOrThrow("numero_habitacion")
                 val typeIndex = c.getColumnIndexOrThrow("tipo")
                 val priceIndex = c.getColumnIndexOrThrow("precio")
@@ -147,6 +161,7 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
 
                 if (c.moveToFirst()) {
                     do {
+                        val idRoom = try { c.getLong(idIndex) } catch (_: Exception) { -1L }
                         val num = c.getInt(numIndex)
                         val type = c.getString(typeIndex)
                         val price = c.getDouble(priceIndex)
@@ -156,7 +171,7 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                         val image = if (c.isNull(imageIndex)) null else c.getString(imageIndex)
                         val description = if (c.isNull(descriptionIndex)) null else c.getString(descriptionIndex)
 
-                        roomList.add(Room(num, type, price, image, capacity, description))
+                        roomList.add(Room(idRoom, hotelId.toLong(), num, type, price, image, capacity, description, hotelName))
                     } while (c.moveToNext())
                 }
             }
