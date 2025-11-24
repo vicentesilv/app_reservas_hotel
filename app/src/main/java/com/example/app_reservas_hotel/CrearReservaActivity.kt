@@ -20,6 +20,7 @@ import androidx.core.content.edit
 import com.google.android.material.navigation.NavigationView
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.app_reservas_hotel.utils.UiUtils
 
 class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var roomId: Long = -1L
@@ -44,44 +45,21 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
         val roomType = intent.getStringExtra("ROOM_TYPE") ?: "-"
         val hotelName = intent.getStringExtra("HOTEL_NAME") ?: "-"
 
-        // Configurar toolbar (usando el mismo id que en activity_hoteles)
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
+        // Configurar toolbar (usando UiUtils)
+        UiUtils.setupToolbar(this, R.id.toolbar)
 
-        // Drawer and navigation view
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view_reserva)
-        try {
-            navigationView.setNavigationItemSelectedListener(this)
-        } catch (_: Exception) {
-        }
+        // Drawer and navigation view (UiUtils se encarga de setNavigationItemSelectedListener si corresponde)
+        val pair = UiUtils.initDrawer(this, R.id.drawer_layout, R.id.navigation_view_reserva)
+        drawerLayout = pair.first ?: findViewById(R.id.drawer_layout)
+        navigationView = pair.second ?: findViewById(R.id.navigation_view_reserva)
 
-        // Botones del toolbar
-        val btnBack = findViewById<ImageButton?>(R.id.btnBackReserva)
-        val btnMenu = findViewById<ImageButton?>(R.id.btnMenuReserva)
-
-        btnBack?.setOnClickListener {
-            finish()
-        }
-
-        btnMenu?.setOnClickListener {
-            // abrir drawer
-            try {
-                drawerLayout.openDrawer(GravityCompat.START)
-                return@setOnClickListener
-            } catch (_: Exception) {
-            }
-            Toast.makeText(this, "Abrir menú", Toast.LENGTH_SHORT).show()
-        }
+        // Botones del toolbar: usar utilidades para evitar duplicar lógica
+        UiUtils.bindBackButton(this, R.id.btnBackReserva)
+        UiUtils.bindMenuButton(this, R.id.btnMenuReserva, drawerLayout)
 
         // Poner título en el toolbar similar a activity_hoteles (mostrar en TextView también)
         val tvRoomHeader = findViewById<TextView>(R.id.tvRoomHeader)
         tvRoomHeader.text = getString(R.string.room_header_format, hotelName, roomType)
-
-
-
-
 
         // Resto del inicializador (fechas, botones, etc.) — ahora usando CalendarView inline
         val tvFechaEntrada = findViewById<TextView>(R.id.tvFechaEntrada)
@@ -102,99 +80,18 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
         cal.add(Calendar.DAY_OF_MONTH, 1)
         val tomorrowMillis = cal.timeInMillis
 
-        fechaEntrada = sdf.format(Date(todayMillis))
-        fechaSalida = sdf.format(Date(tomorrowMillis))
-
-        tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), fechaEntrada)
-        tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), fechaSalida)
-
-        // Aplicar estilo inicial: Entrada seleccionada por defecto
-        tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
-        tvFechaEntrada.setTypeface(null, Typeface.BOLD)
-        tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-        tvFechaSalida.setTypeface(null, Typeface.NORMAL)
-        tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-
-        // Configurar CalendarView
-        calendarView.minDate = todayMillis
-        calendarView.date = todayMillis // mostrar hoy seleccionado por defecto
-
-        // Estado: true = elegir Entrada, false = elegir Salida
-        var selectingEntrada = true
-
-        // Clicks en TextViews para alternar target de selección
-        tvFechaEntrada.setOnClickListener {
-            selectingEntrada = true
-            // destacar visiblemente usando color y estilo
-            tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
-            tvFechaEntrada.setTypeface(null, Typeface.BOLD)
-            tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-            tvFechaSalida.setTypeface(null, Typeface.NORMAL)
-            tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-            tvSelectionHelp.text = getString(R.string.select_dates)
-        }
-
-        tvFechaSalida.setOnClickListener {
-            selectingEntrada = false
-            tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.primary))
-            tvFechaSalida.setTypeface(null, Typeface.BOLD)
-            tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-            tvFechaEntrada.setTypeface(null, Typeface.NORMAL)
-            tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-            tvSelectionHelp.text = getString(R.string.select_dates)
-        }
-
-        // Listener del calendario: al seleccionar una fecha, actualizar la fecha correspondiente
-        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val selCal = Calendar.getInstance()
-            selCal.set(Calendar.YEAR, year)
-            selCal.set(Calendar.MONTH, month)
-            selCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            selCal.set(Calendar.HOUR_OF_DAY, 0)
-            selCal.set(Calendar.MINUTE, 0)
-            selCal.set(Calendar.SECOND, 0)
-            selCal.set(Calendar.MILLISECOND, 0)
-            val selMillis = selCal.timeInMillis
-            val selDateStr = sdf.format(Date(selMillis))
-
-            if (selectingEntrada) {
-                fechaEntrada = selDateStr
-                // Si la entrada seleccionada es después de la salida actual, ajustar salida a entrada+1 día
-                val entDate = selCal.timeInMillis
-                val outCal = Calendar.getInstance()
-                try {
-                    // parse fechaSalida existente
-                    outCal.time = sdf.parse(fechaSalida) ?: Date(entDate + 24*60*60*1000)
-                } catch (_: Exception) {
-                    outCal.timeInMillis = entDate + 24*60*60*1000
-                }
-                if (entDate >= outCal.timeInMillis) {
-                    outCal.timeInMillis = entDate + 24*60*60*1000
-                    fechaSalida = sdf.format(Date(outCal.timeInMillis))
-                    tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), fechaSalida)
-                }
-                tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), fechaEntrada)
-            } else {
-                fechaSalida = selDateStr
-                // Si la salida es anterior o igual a la entrada, ajustar entrada a salida-1 día
-                val outDate = selCal.timeInMillis
-                val inCal = Calendar.getInstance()
-                try {
-                    inCal.time = sdf.parse(fechaEntrada) ?: Date(outDate - 24*60*60*1000)
-                } catch (_: Exception) {
-                    inCal.timeInMillis = outDate - 24*60*60*1000
-                }
-                if (outDate <= inCal.timeInMillis) {
-                    inCal.timeInMillis = outDate - 24*60*60*1000
-                    fechaEntrada = sdf.format(Date(inCal.timeInMillis))
-                    tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), fechaEntrada)
-                }
-                tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), fechaSalida)
-            }
-
-            // Mostrar resumen
-            tvSelectionHelp.text = getString(R.string.rango_seleccionado, fechaEntrada, fechaSalida)
-            tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.highlight))
+        // Usar utilitario para manejar selector de rango y actualizaciones UI
+        UiUtils.attachCalendarRangeSelector(
+            this,
+            calendarView,
+            tvFechaEntrada,
+            tvFechaSalida,
+            tvSelectionHelp,
+            todayMillis,
+            tomorrowMillis
+        ) { entradaStr, salidaStr ->
+            fechaEntrada = entradaStr
+            fechaSalida = salidaStr
         }
 
         // Reservar
@@ -217,9 +114,8 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
                 return@setOnClickListener
             }
 
-            // Resolver usuario actual desde SharedPreferences
-            val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            val storedUsername = prefs.getString("logged_username", null)
+            // Resolver usuario actual desde SharedPreferences (utilitario)
+            val storedUsername = UiUtils.getLoggedUsername(this)
             if (storedUsername.isNullOrEmpty()) {
                 Toast.makeText(this, "Debes iniciar sesión para crear una reserva", Toast.LENGTH_SHORT).show()
                 // redirigir al login
@@ -274,47 +170,8 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.nav_hoteles -> {
-                drawerLayout.closeDrawers()
-            }
-            R.id.nav_reservas -> {
-                try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
-                    val intent = Intent(this, cls as Class<*>)
-                    // pasar username si existe en SharedPreferences
-                    val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                    val storedUsername = prefs.getString("logged_username", null)
-                    storedUsername?.let { intent.putExtra("username", it) }
-                    startActivity(intent)
-                } catch (_: ClassNotFoundException) {
-                }
-                drawerLayout.closeDrawers()
-            }
-            R.id.nav_mi_info -> {
-                try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.MiInformacionActivity")
-                    val intent = Intent(this, cls as Class<*>)
-                    startActivity(intent)
-                } catch (_: ClassNotFoundException) {
-                }
-                drawerLayout.closeDrawers()
-            }
-            R.id.nav_logout -> {
-                // limpiar sesión
-                val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                prefs.edit { remove("logged_username") }
-                try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.Login")
-                    val intent = Intent(this, cls as Class<*>)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-                } catch (_: Exception) {
-                }
-            }
-        }
-        return true
+        val storedUsername = UiUtils.getLoggedUsername(this)
+        return UiUtils.handleNavigationSelection(this, item.itemId, drawerLayout, storedUsername)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

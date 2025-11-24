@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AlertDialog
+import com.example.app_reservas_hotel.utils.UiUtils
 
 class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawerLayout: DrawerLayout
@@ -27,17 +28,14 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mi_informacion)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        UiUtils.setupToolbar(this, R.id.toolbar, true)
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view)
-        navigationView.setNavigationItemSelectedListener(this)
+        val pair = UiUtils.initDrawer(this, R.id.drawer_layout, R.id.navigation_view)
+        drawerLayout = pair.first ?: findViewById(R.id.drawer_layout)
+        navigationView = pair.second ?: findViewById(R.id.navigation_view)
 
         // Obtener username de SharedPreferences o Intent
-        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val storedUsername = prefs.getString("logged_username", null)
+        val storedUsername = UiUtils.getLoggedUsername(this)
         val intentUsername = intent.getStringExtra("username")
         val username = if (!intentUsername.isNullOrEmpty()) intentUsername else storedUsername
 
@@ -57,7 +55,7 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
 
         // Drawer toggle
         val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
+            this, drawerLayout, findViewById(R.id.toolbar),
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
@@ -195,8 +193,7 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
                      val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                      val intent = Intent(this, cls as Class<*>)
                     // pasar username desde SharedPreferences si existe
-                    val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                    val storedUsername = prefs.getString("logged_username", null)
+                    val storedUsername = UiUtils.getLoggedUsername(this)
                     storedUsername?.let { intent.putExtra("username", it) }
                      startActivity(intent)
                  } catch (_: ClassNotFoundException) {}

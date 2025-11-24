@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
+import com.example.app_reservas_hotel.utils.UiUtils
 
 class VerReservasActivity : AppCompatActivity() {
 
@@ -38,8 +39,7 @@ class VerReservasActivity : AppCompatActivity() {
 
         dbHelper = DatabaseHelper(this)
 
-        val btnBack: ImageButton? = findViewById(R.id.btnBackVerReservas)
-        btnBack?.setOnClickListener { finish() }
+        UiUtils.bindBackButton(this, R.id.btnBackVerReservas)
 
         rv = findViewById(R.id.rvReservas)
         adapter = ReservasAdapter()
@@ -107,8 +107,7 @@ class VerReservasActivity : AppCompatActivity() {
 
         // Si aún no tenemos userId, intentar con username almacenado en SharedPreferences (sesión)
         if (userId <= 0L) {
-            val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-            val storedUsername = prefs.getString("logged_username", null)
+            val storedUsername = UiUtils.getLoggedUsername(this)
             if (!storedUsername.isNullOrEmpty()) {
                 try {
                     val cursor = dbHelper.obtenerUsuarioPorUsername(storedUsername)
@@ -152,82 +151,18 @@ class VerReservasActivity : AppCompatActivity() {
             var entradaMillis = try { dateFormat.parse(reserva.fechaEntrada)?.time ?: System.currentTimeMillis() } catch (_: Exception) { System.currentTimeMillis() }
             var salidaMillis = try { dateFormat.parse(reserva.fechaSalida)?.time ?: (entradaMillis + 24*60*60*1000) } catch (_: Exception) { entradaMillis + 24*60*60*1000 }
 
-            // Mostrar en TextViews
-            tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
-            tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
-
-            // Estilo inicial: Entrada seleccionada por defecto
-            tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
-            tvFechaEntrada.setTypeface(null, Typeface.BOLD)
-            tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-            tvFechaSalida.setTypeface(null, Typeface.NORMAL)
-            tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-
-            // Configurar CalendarView
-            val calNow = Calendar.getInstance()
-            calNow.set(Calendar.HOUR_OF_DAY, 0)
-            calNow.set(Calendar.MINUTE, 0)
-            calNow.set(Calendar.SECOND, 0)
-            calNow.set(Calendar.MILLISECOND, 0)
-            val todayMillis = calNow.timeInMillis
-
-            calendarView.minDate = todayMillis
-            calendarView.date = entradaMillis
-
-            // Estado: true = elegir Entrada, false = elegir Salida
-            var selectingEntrada = true
-
-            // Clicks en TextViews para alternar target de selección
-            tvFechaEntrada.setOnClickListener {
-                selectingEntrada = true
-                tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.primary))
-                tvFechaEntrada.setTypeface(null, Typeface.BOLD)
-                tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-                tvFechaSalida.setTypeface(null, Typeface.NORMAL)
-                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-                tvSelectionHelp.text = getString(R.string.select_dates)
-            }
-
-            tvFechaSalida.setOnClickListener {
-                selectingEntrada = false
-                tvFechaSalida.setTextColor(ContextCompat.getColor(this, R.color.primary))
-                tvFechaSalida.setTypeface(null, Typeface.BOLD)
-                tvFechaEntrada.setTextColor(ContextCompat.getColor(this, R.color.on_surface))
-                tvFechaEntrada.setTypeface(null, Typeface.NORMAL)
-                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.secondary_text))
-                tvSelectionHelp.text = getString(R.string.select_dates)
-            }
-
-            // Listener del calendario: al seleccionar una fecha, actualizar la fecha correspondiente
-            calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-                val selCal = Calendar.getInstance()
-                selCal.set(Calendar.YEAR, year)
-                selCal.set(Calendar.MONTH, month)
-                selCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                selCal.set(Calendar.HOUR_OF_DAY, 0)
-                selCal.set(Calendar.MINUTE, 0)
-                selCal.set(Calendar.SECOND, 0)
-                selCal.set(Calendar.MILLISECOND, 0)
-                val selMillis = selCal.timeInMillis
-
-                if (selectingEntrada) {
-                    entradaMillis = selMillis
-                    if (entradaMillis >= salidaMillis) {
-                        salidaMillis = entradaMillis + 24*60*60*1000
-                        tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
-                    }
-                    tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
-                } else {
-                    salidaMillis = selMillis
-                    if (salidaMillis <= entradaMillis) {
-                        entradaMillis = salidaMillis - 24*60*60*1000
-                        tvFechaEntrada.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_entrada), dateFormat.format(Date(entradaMillis)))
-                    }
-                    tvFechaSalida.text = getString(R.string.fecha_with_value, getString(R.string.btn_fecha_salida), dateFormat.format(Date(salidaMillis)))
-                }
-
-                tvSelectionHelp.text = getString(R.string.rango_seleccionado, dateFormat.format(Date(entradaMillis)), dateFormat.format(Date(salidaMillis)))
-                tvSelectionHelp.setTextColor(ContextCompat.getColor(this, R.color.highlight))
+            // Usar utilitario para manejar interacciones del calendario y TextViews
+            UiUtils.attachCalendarRangeSelector(
+                this,
+                calendarView,
+                tvFechaEntrada,
+                tvFechaSalida,
+                tvSelectionHelp,
+                entradaMillis,
+                salidaMillis
+            ) { newEntrada, newSalida ->
+                entradaMillis = try { dateFormat.parse(newEntrada)?.time ?: entradaMillis } catch (_: Exception) { entradaMillis }
+                salidaMillis = try { dateFormat.parse(newSalida)?.time ?: salidaMillis } catch (_: Exception) { salidaMillis }
             }
 
             val dialog = AlertDialog.Builder(this)

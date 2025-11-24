@@ -127,8 +127,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         }
     }
 
-    // Manejar downgrades: por defecto SQLite lanza una excepción si la versión es menor.
-    // Aquí aplicamos la misma lógica que en onUpgrade para recrear la base y evitar el crash.
+//     Manejar downgrades: por defecto SQLite lanza una excepción si la versión es menor.
+//     Aquí aplicamos la misma lógica que en onUpgrade para recrear la base y evitar el crash.
     override fun onDowngrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS reservas")
         db?.execSQL("DROP TABLE IF EXISTS habitaciones")
@@ -137,9 +137,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
         onCreate(db)
     }
 
-    /**
-     * Intenta leer `assets/data.json` y poblar la base.
-     */
+//    Intenta leer `assets/data.json` y poblar la base.
     private fun insertFromAssets(db: SQLiteDatabase): Boolean {
         Log.d("DatabaseHelper", "insertFromAssets: starting import from assets/data.json")
         val jsonString: String = try {

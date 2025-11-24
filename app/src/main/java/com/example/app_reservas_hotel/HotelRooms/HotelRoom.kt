@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.content.edit
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,7 @@ import com.example.app_reservas_hotel.DatabaseHelper
 import com.example.app_reservas_hotel.R
 import com.google.android.material.navigation.NavigationView
 import android.widget.ImageView
+import com.example.app_reservas_hotel.utils.UiUtils
 
 class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener{
     private lateinit var drawerLayout: DrawerLayout
@@ -32,59 +34,31 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         val dbHelper = DatabaseHelper(this)
         dbHelper.insertSampleDataIfEmpty()
 
-        // Configurar toolbar y botones (back + menú)
-        val toolbar = findViewById<Toolbar>(R.id.navbarRoom)
-        setSupportActionBar(toolbar)
+        // Configurar toolbar y botones (back + menú) usando utilidades
+        UiUtils.setupToolbar(this, R.id.navbarRoom)
 
-        drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout_rooms)
-        navigationView = findViewById<NavigationView>(R.id.navigation_view_rooms)
-        navigationView.setNavigationItemSelectedListener(this)
+        val pair = UiUtils.initDrawer(this, R.id.drawer_layout_rooms, R.id.navigation_view_rooms)
+        drawerLayout = pair.first ?: findViewById(R.id.drawer_layout_rooms)
+        navigationView = pair.second ?: findViewById(R.id.navigation_view_rooms)
 
         // Inicializa header del drawer con el username (si viene)
         val header = navigationView.getHeaderView(0)
         val headerUsername = header?.findViewById<TextView>(R.id.headerUsername)
         val intentUsername = intent.getStringExtra("username")
-        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val storedUsername = prefs.getString("logged_username", null)
+        val storedUsername = UiUtils.getLoggedUsername(this)
         val username = if (!intentUsername.isNullOrEmpty()) intentUsername else storedUsername
         currentUsername = username
         headerUsername?.text = if (!username.isNullOrEmpty()) username else getString(R.string.header_default_user)
 
-        val btnBack = findViewById<ImageButton>(R.id.btnBackRooms)
-        val btnMenu = findViewById<ImageButton>(R.id.btnMenuRooms)
-
-        btnBack.setOnClickListener {
-            // vuelve a la actividad anterior
-            finish()
-        }
-
-        btnMenu.setOnClickListener {
-            // abre el drawer navigation
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
+        UiUtils.bindBackButton(this, R.id.btnBackRooms)
+        UiUtils.bindMenuButton(this, R.id.btnMenuRooms, drawerLayout)
 
         initRecyclerView()
 
         // conectar SearchView para búsqueda en tiempo real
         try {
             val searchView = findViewById<SearchView>(R.id.searchView)
-
-            // Personalizaciones visuales: icono, colores de texto/hint
-            try {
-                val magIcon = searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)
-                magIcon?.setImageResource(R.drawable.ic_search)
-                magIcon?.setColorFilter(ContextCompat.getColor(this, R.color.black))
-
-                val searchEditText = searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
-                searchEditText?.setTextColor(ContextCompat.getColor(this, R.color.black))
-                searchEditText?.setHintTextColor(ContextCompat.getColor(this, R.color.black))
-
-                val plate = searchView.findViewById<android.view.View>(androidx.appcompat.R.id.search_plate)
-                plate?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-
-                searchView.setPadding(8, 0, 8, 0)
-            } catch (_: Exception) {
-            }
+            UiUtils.styleSearchView(searchView, this)
 
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
@@ -204,8 +178,7 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
                     if (!currentUsername.isNullOrEmpty()) {
                         intent.putExtra("username", currentUsername)
                     } else {
-                        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                        val stored = prefs.getString("logged_username", null)
+                        val stored = UiUtils.getLoggedUsername(this)
                         stored?.let { intent.putExtra("username", it) }
                     }
                     startActivity(intent)
@@ -225,8 +198,9 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
             }
             R.id.nav_logout -> {
                 // limpiar sesión
+
                 val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                prefs.edit().remove("logged_username").apply()
+                prefs.edit { remove("logged_username") }
                 val intent = Intent(this, Class.forName("com.example.app_reservas_hotel.Login") as Class<*>)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)

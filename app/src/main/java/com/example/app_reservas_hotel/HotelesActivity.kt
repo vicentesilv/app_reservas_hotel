@@ -15,11 +15,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.app_reservas_hotel.HotelRooms.HotelRoom
 import com.google.android.material.navigation.NavigationView
+import com.example.app_reservas_hotel.utils.UiUtils
 
 class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawerLayout: DrawerLayout
@@ -35,27 +37,25 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hoteles)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        UiUtils.setupToolbar(this, R.id.toolbar)
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById<NavigationView>(R.id.navigation_view)
-        navigationView.setNavigationItemSelectedListener(this)
+        val pair = UiUtils.initDrawer(this, R.id.drawer_layout, R.id.navigation_view)
+        drawerLayout = pair.first ?: findViewById(R.id.drawer_layout)
+        navigationView = pair.second ?: findViewById(R.id.navigation_view)
 
         // Inicializar header del drawer con el username (si viene)
         val header: View? = navigationView.getHeaderView(0)
         val headerUsername = header?.findViewById<TextView>(R.id.headerUsername)
         // Preferir username pasado por Intent, si no existe usar SharedPreferences (sesión)
         val intentUsername = intent.getStringExtra("username")
-        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val storedUsername = prefs.getString("logged_username", null)
+        val storedUsername = UiUtils.getLoggedUsername(this)
         val username = if (!intentUsername.isNullOrEmpty()) intentUsername else storedUsername
         currentUsername = username
         headerUsername?.text = if (!username.isNullOrEmpty()) username else getString(R.string.header_default_user)
 
         // ActionBarDrawerToggle usando strings para accesibilidad
         val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
+            this, drawerLayout, findViewById(R.id.toolbar),
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
@@ -160,26 +160,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         try {
             val searchView = findViewById<SearchView>(R.id.searchView)
 
-            // Ajustes visuales: icono de lupa y colores de texto/hint para fondo oscuro
-            try {
-                // cambiar icono de lupa
-                val magIcon = searchView.findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon)
-                magIcon?.setImageResource(R.drawable.ic_search)
-                magIcon?.setColorFilter(ContextCompat.getColor(this, R.color.black))
-
-                // cambiar color del texto y hint a negro
-                val searchEditText = searchView.findViewById<android.widget.EditText>(androidx.appcompat.R.id.search_src_text)
-                searchEditText?.setTextColor(ContextCompat.getColor(this, R.color.black))
-                searchEditText?.setHintTextColor(ContextCompat.getColor(this, R.color.black))
-
-                // ajustar el fondo del campo interno (quita el fondo por defecto para que el nuestro sea el visible)
-                val plate = searchView.findViewById<View>(androidx.appcompat.R.id.search_plate)
-                plate?.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-
-                // ajustar padding para que el texto no quede pegado
-                searchView.setPadding(8, 0, 8, 0)
-            } catch (_: Exception) {
-            }
+            UiUtils.styleSearchView(searchView, this)
 
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
@@ -205,8 +186,6 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
         welcomeRunnable?.let { mainHandler.removeCallbacks(it) }
         super.onDestroy()
     }
-
-    // Eliminado onCreateOptionsMenu para quitar el menú de la derecha (overflow)
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -239,7 +218,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             R.id.nav_logout -> {
                 // limpiar sesión
                 val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                prefs.edit().remove("logged_username").apply()
+                prefs.edit { remove("logged_username") }
                 val intent = Intent(this, Login::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
@@ -280,7 +259,7 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             R.id.nav_logout -> {
                 // limpiar sesión
                 val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-                prefs.edit().remove("logged_username").apply()
+                prefs.edit { remove("logged_username") }
                 val intent = Intent(this, Login::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
