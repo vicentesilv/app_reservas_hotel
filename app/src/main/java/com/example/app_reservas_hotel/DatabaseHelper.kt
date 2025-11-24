@@ -14,7 +14,8 @@ import java.io.IOException
 class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, dataBaseName, null, databaseVersion) {
     companion object {
         private const val dataBaseName = "hotel_reservas.db"
-        private const val databaseVersion = 6
+        // Incrementar versión para aplicar nueva columna `stock` en habitaciones
+        private const val databaseVersion = 7
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -49,6 +50,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     id_hotel INTEGER NOT NULL,
                     numero_habitacion INTEGER NOT NULL,
+                    stock INTEGER NOT NULL DEFAULT 1,
                     tipo TEXT NOT NULL,
                     precio REAL NOT NULL, -- Changed to REAL for Double
                     foto TEXT,
@@ -91,11 +93,38 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS reservas")
-        db?.execSQL("DROP TABLE IF EXISTS habitaciones")
-        db?.execSQL("DROP TABLE IF EXISTS HOTELES")
-        db?.execSQL("DROP TABLE IF EXISTS usuarios")
-        onCreate(db)
+        if (db == null) return
+
+        try {
+            // Migración incremental: si venimos de versión menor que 7, intentamos añadir columna `stock`
+            if (oldVersion < 7) {
+                try {
+                    db.execSQL("ALTER TABLE habitaciones ADD COLUMN stock INTEGER NOT NULL DEFAULT 1")
+                    // Otras migraciones entre versiones podrían añadirse aquí
+                    return
+                } catch (e: Exception) {
+                    Log.w("DatabaseHelper", "onUpgrade: fallo al añadir columna stock, fallback a recrear tablas", e)
+                    // fallback: eliminar y recrear
+                }
+            }
+
+            // Fallback genérico: recrear todas las tablas
+            db.execSQL("DROP TABLE IF EXISTS reservas")
+            db.execSQL("DROP TABLE IF EXISTS habitaciones")
+            db.execSQL("DROP TABLE IF EXISTS HOTELES")
+            db.execSQL("DROP TABLE IF EXISTS usuarios")
+            onCreate(db)
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "onUpgrade: error al actualizar la base de datos", e)
+            try {
+                // Intentar fallback definitivo
+                db.execSQL("DROP TABLE IF EXISTS reservas")
+                db.execSQL("DROP TABLE IF EXISTS habitaciones")
+                db.execSQL("DROP TABLE IF EXISTS HOTELES")
+                db.execSQL("DROP TABLE IF EXISTS usuarios")
+                onCreate(db)
+            } catch (_: Exception) {}
+        }
     }
 
     // Manejar downgrades: por defecto SQLite lanza una excepción si la versión es menor.
@@ -170,6 +199,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                     for (j in 0 until habitacionesArray.length()) {
                         val rObj = habitacionesArray.optJSONObject(j) ?: continue
                         val numero = rObj.optInt("numero_habitacion", j + 1)
+                        val stock = rObj.optInt("stock", 1)
                         val tipo = rObj.optString("tipo", "Estándar")
                         val precio = rObj.optDouble("precio", 50.0) // Read as Double
                         val capacidad = rObj.optInt("capacidad")
@@ -180,6 +210,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                         val rv = ContentValues().apply {
                             put("id_hotel", hotelId)
                             put("numero_habitacion", numero)
+                            put("stock", stock)
                             put("tipo", tipo)
                             put("precio", precio)
                             put("capacidad", capacidad)
@@ -395,17 +426,65 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
 
     fun crearReserva(idHotel: Long, idHabitacion: Long, idUsuario: Long, nombre: String, fechaEntrada: String, fechaSalida: String, numeroHabitacion: Int): Boolean {
         val db = this.writableDatabase
-        val values = ContentValues().apply {
-            put("id_hotel", idHotel)
-            put("id_habitacion", idHabitacion)
-            put("id_usuario", idUsuario)
-            put("nombre", nombre)
-            put("fecha_entrada", fechaEntrada)
-            put("fecha_salida", fechaSalida)
-            put("numero_habitacion", numeroHabitacion)
+        try {
+            db.beginTransaction()
+            // Insertar reserva
+            val values = ContentValues().apply {
+                put("id_hotel", idHotel)
+                put("id_habitacion", idHabitacion)
+                put("id_usuario", idUsuario)
+                put("nombre", nombre)
+                put("fecha_entrada", fechaEntrada)
+                put("fecha_salida", fechaSalida)
+                put("numero_habitacion", numeroHabitacion)
+            }
+            val result = db.insert("reservas", null, values)
+            if (result == -1L) {
+                // fallo al insertar reserva
+                return false
+            }
+
+            // Reducir numero_habitacion en la tabla habitaciones para la fila correspondiente
+            try {
+                // Usar una única sentencia UPDATE atómica para decrementar solo si numero_habitacion > 0
+                val updated = db.compileStatement("UPDATE habitaciones SET numero_habitacion = numero_habitacion - 1 WHERE id = ? AND numero_habitacion > 0").apply {
+                    bindLong(1, idHabitacion)
+                }.executeUpdateDelete()
+
+                if (updated <= 0) {
+                    // 0 filas afectadas: o la habitación no existe, o numero_habitacion ya era 0
+                    // Comprobar existencia de la habitación para distinguir el caso
+                    val existsCur = db.rawQuery("SELECT COUNT(*) FROM habitaciones WHERE id = ?", arrayOf(idHabitacion.toString()))
+                    var exists = false
+                    existsCur.use {
+                        if (it.moveToFirst()) {
+                            try { exists = it.getInt(0) > 0 } catch (_: Exception) { exists = false }
+                        }
+                    }
+                    if (!exists) {
+                        Log.e("DatabaseHelper", "crearReserva: no se encontró la habitación id=$idHabitacion")
+                        return false
+                    } else {
+                        // habitación existe pero numero_habitacion ya era 0 -> no hay disponibilidad
+                        Log.e("DatabaseHelper", "crearReserva: habitación id=$idHabitacion sin disponibilidad (numero_habitacion==0)")
+                        return false
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "crearReserva: error al reducir numero_habitacion", e)
+                return false
+            }
+
+            db.setTransactionSuccessful()
+            return true
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "crearReserva transaction failed", e)
+            return false
+        } finally {
+            try { db.endTransaction() } catch (_: Exception) {}
+            try { db.close() } catch (_: Exception) {}
+            // en caso de fallo devolverá false
         }
-        val result = db.insert("reservas", null, values)
-        return result != -1L
     }
 
     @Suppress("unused")
@@ -563,6 +642,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 val r1 = ContentValues().apply {
                     put("id_hotel", hid1)
                     put("numero_habitacion", 1)
+                    put("stock", 1)
                     put("tipo", "Individual")
                     put("precio", 60.0)
                     put("capacidad", 1)
@@ -573,6 +653,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 val r2 = ContentValues().apply {
                     put("id_hotel", hid1)
                     put("numero_habitacion", 2)
+                    put("stock", 1)
                     put("tipo", "Doble")
                     put("precio", 70.0)
                     put("capacidad", 2)
@@ -584,6 +665,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, d
                 val r3 = ContentValues().apply {
                     put("id_hotel", hid2)
                     put("numero_habitacion", 1)
+                    put("stock", 1)
                     put("tipo", "Suite")
                     put("precio", 90.0)
                     put("capacidad", 4)
