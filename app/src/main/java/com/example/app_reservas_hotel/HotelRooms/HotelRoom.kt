@@ -198,8 +198,16 @@ class HotelRoom : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
             }
             R.id.nav_reservas -> {
                 try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.MisReservasActivity")
+                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    // pasar username (preferir currentUsername, si no usar SharedPreferences)
+                    if (!currentUsername.isNullOrEmpty()) {
+                        intent.putExtra("username", currentUsername)
+                    } else {
+                        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                        val stored = prefs.getString("logged_username", null)
+                        stored?.let { intent.putExtra("username", it) }
+                    }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                 }

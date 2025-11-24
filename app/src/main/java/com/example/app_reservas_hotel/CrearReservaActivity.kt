@@ -217,10 +217,54 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
                 return@setOnClickListener
             }
 
+            // Resolver usuario actual desde SharedPreferences
+            val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            val storedUsername = prefs.getString("logged_username", null)
+            if (storedUsername.isNullOrEmpty()) {
+                Toast.makeText(this, "Debes iniciar sesión para crear una reserva", Toast.LENGTH_SHORT).show()
+                // redirigir al login
+                try {
+                    val cls = Class.forName("com.example.app_reservas_hotel.Login")
+                    val intent = Intent(this, cls as Class<*>)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                } catch (_: Exception) {}
+                return@setOnClickListener
+            }
+
             val dbHelper = DatabaseHelper(this)
-            val success = dbHelper.crearReserva(hotelId, roomId, -1L, nombre, fechaEntrada, fechaSalida, roomNumber)
+            var userIdForReservation: Long = -1L
+            try {
+                val cursor = dbHelper.obtenerUsuarioPorUsername(storedUsername)
+                cursor.use {
+                    if (it.moveToFirst()) {
+                        userIdForReservation = try { it.getLong(0) } catch (_: Exception) { -1L }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+
+            if (userIdForReservation <= 0L) {
+                Toast.makeText(this, "Usuario no encontrado en la base de datos", Toast.LENGTH_SHORT).show()
+                try { dbHelper.close() } catch (_: Exception) {}
+                return@setOnClickListener
+            }
+
+            val success = dbHelper.crearReserva(hotelId, roomId, userIdForReservation, nombre, fechaEntrada, fechaSalida, roomNumber)
+            try { dbHelper.close() } catch (_: Exception) {}
+
             if (success) {
                 Toast.makeText(this, "Reserva creada", Toast.LENGTH_SHORT).show()
+                // Opcionalmente abrir la pantalla de mis reservas pasando el username
+                try {
+                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
+                    val intent = Intent(this, cls as Class<*>)
+                    intent.putExtra("username", storedUsername)
+                    startActivity(intent)
+                } catch (_: ClassNotFoundException) {
+                    // si no existe, solo cerrar
+                }
                 finish()
             } else {
                 Toast.makeText(this, "Error creando reserva", Toast.LENGTH_SHORT).show()
@@ -236,8 +280,12 @@ class CrearReservaActivity : AppCompatActivity(), NavigationView.OnNavigationIte
             }
             R.id.nav_reservas -> {
                 try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.MisReservasActivity")
+                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    // pasar username si existe en SharedPreferences
+                    val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                    val storedUsername = prefs.getString("logged_username", null)
+                    storedUsername?.let { intent.putExtra("username", it) }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                 }

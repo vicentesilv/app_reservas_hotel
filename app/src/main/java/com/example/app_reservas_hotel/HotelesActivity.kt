@@ -216,8 +216,10 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             }
             R.id.nav_reservas -> {
                 try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.MisReservasActivity")
+                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    // pasar username actual si existe
+                    currentUsername?.let { intent.putExtra("username", it) }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                 }
@@ -255,8 +257,10 @@ class HotelesActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             }
             R.id.nav_reservas -> {
                 try {
-                    val cls = Class.forName("com.example.app_reservas_hotel.MisReservasActivity")
+                    val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                     val intent = Intent(this, cls as Class<*>)
+                    // pasar username actual si existe
+                    currentUsername?.let { intent.putExtra("username", it) }
                     startActivity(intent)
                 } catch (_: ClassNotFoundException) {
                     // actividad no existente: no hacer nada

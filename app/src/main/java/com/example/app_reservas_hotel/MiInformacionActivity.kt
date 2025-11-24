@@ -192,8 +192,12 @@ class MiInformacionActivity : AppCompatActivity(), NavigationView.OnNavigationIt
              }
              R.id.nav_reservas -> {
                  try {
-                     val cls = Class.forName("com.example.app_reservas_hotel.MisReservasActivity")
+                     val cls = Class.forName("com.example.app_reservas_hotel.VerReservasActivity")
                      val intent = Intent(this, cls as Class<*>)
+                    // pasar username desde SharedPreferences si existe
+                    val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                    val storedUsername = prefs.getString("logged_username", null)
+                    storedUsername?.let { intent.putExtra("username", it) }
                      startActivity(intent)
                  } catch (_: ClassNotFoundException) {}
                  drawerLayout.closeDrawers()
