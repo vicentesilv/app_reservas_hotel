@@ -22,20 +22,20 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="12dp">
 
             <ImageView
                 android:id="@+id/ivRoom"
                 android:layout_width="112dp"
-                android:layout_height="116dp"
+                android:layout_height="112dp"
                 android:scaleType="centerCrop"
                 android:contentDescription="@string/room_image"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
             <LinearLayout
-                android:layout_width="244dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
@@ -44,16 +44,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:id="@+id/numerodisponible"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:text="numero de habitacion" />
+                    android:gravity="top|start">
 
                     <TextView
                         android:id="@+id/tvNumber"
@@ -64,28 +55,19 @@
                         android:textColor="@color/black"
                         tools:text="#201" />
 
+                    <TextView
+                        android:id="@+id/tvType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textColor="@color/black"
+                        android:textSize="16dp"
+                        android:textAlignment="viewStart"
+                        tools:text="Habitación Doble con " />
+
                 </LinearLayout>
 
                 <!-- Tipo en una nueva línea para evitar solapamientos -->
-                <TextView
-                    android:id="@+id/tvType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="6dp"
-                    android:textColor="@color/black"
-                    tools:text="Habitación Doble con Vista al Mar" />
-
-                <TextView
-                    android:id="@+id/tvPrice"
-                    android:layout_width="176dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="60dp"
-                    android:layout_marginTop="0dp"
-                    android:textAlignment="textEnd"
-                    android:textColor="@android:color/holo_green_dark"
-                    android:textStyle="bold"
-                    tools:text="$120.00 USD" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -95,21 +77,33 @@
                     <TextView
                         android:id="@+id/tvCapacity"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="0dp"
                         android:textColor="@color/black"
                         tools:text="Capacidad: " />
 
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="0dp"
+                        android:textAlignment="textEnd"
+                        android:textColor="@android:color/holo_green_dark"
+                        android:textStyle="bold"
+                        tools:text="$120.00 USD" />
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvDescription"
-                    android:layout_width="203dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="0dp"
                     android:textColor="@color/black"
+                    android:textStyle="italic"
                     tools:text="Una breve descripción de la habitación, sus comodidades y las vistas que ofrece." />
 
             </LinearLayout>

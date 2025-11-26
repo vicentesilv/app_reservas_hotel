@@ -17,7 +17,7 @@ class RoomViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
     fun render(roomModel: Room){
         // Mostrar sólo el número (la etiqueta "Disponible:" ya está en `numerodisponible`)
-        tvNumber.text = roomModel.num.toString()
+        tvNumber.text ="#${roomModel.num}"
         tvType.text = roomModel.type
         // Usar recursos para formatear el precio (evita concatenación en setText)
         try {
